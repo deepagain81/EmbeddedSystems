@@ -33,7 +33,7 @@ Import('env bin2hex linker_side_effect')
 SConscript('templates/SConscript.py', 'env')
 
 ## Walk through each source file and build it
-for sourceFile in Glob('embeddedsystemsspring2019/*.c', True, True, True):
+for sourceFile in Glob('chap14/*.c', True, True, True):
     # Compile the ESOS application.
     p = env.Program(
       [ sourceFile,
