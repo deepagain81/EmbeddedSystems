@@ -1,0 +1,5 @@
+Brian,
+
+In the present configuration, the program files are difficult to find. Our t2_rag1.c, t2_rag2.c, t2_rag3.c files are located in the subfolder embeddedsystemsspring2019, near the bottom under all the chapter 14 stuff. They are located in the same sub folder of builds as well.
+
+Thanks!
