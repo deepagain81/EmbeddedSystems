@@ -47,6 +47,16 @@
 	#define SW3_PRESSED() (SW3 == 0)
 	#define SW3_RELEASED() (SW3 == 1) // SW3 has a pullup, so an unpressed switch is Logical high
 	#define READ_SW3() (SW3)
+	// RPG pin A
+	#define RPGA (_RB8)
+	#define CONFIG_RPGA()  ({CONFIG_RB8_AS_DIG_INPUT(); ENABLE_RB8_PULLUP();})
+	#define RPGA_IS_HIGH() (RPGA == 1)
+	#define RPGA_IS_LOW()  (RPGA == 0) // RPGA should have a pullup, since the switch grounds when connecting
+	// RPG pin B
+	#define RPGB (_RB9)
+	#define CONFIG_RPGB()  ({CONFIG_RB9_AS_DIG_INPUT(); ENABLE_RB9_PULLUP();})
+	#define RPGB_IS_HIGH() (RPGB == 1)
+	#define RPGB_IS_LOW()  (RPGB == 0)
 
 void HARDWARE_CONFIG() {
 	configClock();
@@ -57,6 +67,8 @@ void HARDWARE_CONFIG() {
 	CONFIG_SW1();
 	CONFIG_SW2();
 	CONFIG_SW3();
+	CONFIG_RPGA();
+	CONFIG_RPGB();
 	// LED Default State
 	LED1_OFF();
 	LED2_OFF();

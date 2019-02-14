@@ -9,11 +9,12 @@
 // modified 5pm 2/12
 #ifndef   ESOS_UIF14_H
 #define ESOS_UIF14_H
+//#include <stdlib.h> // for the function abs()
 #include <stdbool.h>
 #include <stdint.h>
 #include "esos.h"
 #include "esos_pic24.h"
-#include "revF14.h"
+//#include "revF14.h"
 
 // STRUCTURES
 
@@ -42,13 +43,17 @@ typedef struct {
 // DEFINEs and CONSTANTs
 #define __ESOS_TICKS_TO_MS(x)           (x/1)
 #define __ESOS_MS_TO_TICKS(x)           (x*1)
-#define __ESOS_UIF14_UI_PERIOD_MS       10
+#define __ESOS_UIF14_UI_PERIOD_MS       (10)
 #define __SWITCH_DEBOUNCING_INTERVAL	(50)
 #define __SWITCH_DOUBLE_PRESS_INTERVAL	(500)
+#define __RPG_VELOCITY_CALC_PERIOD      (100)
+#define __RPG_SLOW_SPEED_THRESHOLD		(1)
+#define __RPG_MEDIUM_SPEED_THRESHOLD	(2)
+#define __RPG_HIGH_SPEED_THRESHOLD		(3)
 
 // PRIVATE DATA 
  
-_st_esos_uiF14Data_t _st_esos_uiF14Data;
+//_st_esos_uiF14Data_t _st_esos_uiF14Data; // should this be in the .c file?
 
 // PRIVATE FUNCTION PROTOTYPES
 
@@ -115,15 +120,15 @@ int16_t esos_uiF14_getRPGVelocity_i16 (void);
                             ESOS_TASK_WAIT_UNTIL_UIF14_SW1_PRESSED();         \
                             ESOS_TASK_WAIT_UNTIL_UIF14_SW1_RELEASED();        \
                           } while (0) 
-#define ESOS_TASK_WAIT_UNTIL_UIF14_SW1_DOUBLE_PRESSED()       // not yet implemented
+#define ESOS_TASK_WAIT_UNTIL_UIF14_SW1_DOUBLE_PRESSED()       ESOS_TASK_WAIT_UNTIL(esos_uiF14_isSW1DoublePressed())
 
-#define ESOS_TASK_WAIT_UNTIL_UIF14_SW2_PRESSED()              // not yet implemented
-#define ESOS_TASK_WAIT_UNTIL_UIF14_SW2_RELEASED()             // not yet implemented
+#define ESOS_TASK_WAIT_UNTIL_UIF14_SW2_PRESSED()              ESOS_TASK_WAIT_UNTIL( esos_uiF14_isSW2Pressed() )
+#define ESOS_TASK_WAIT_UNTIL_UIF14_SW2_RELEASED()             ESOS_TASK_WAIT_UNTIL( esos_uiF14_isSW2Released() )
 #define ESOS_TASK_WAIT_UNTIL_UIF14_SW2_PRESSED_AND_RELEASED() // not yet implemented
 #define ESOS_TASK_WAIT_UNTIL_UIF14_SW2_DOUBLE_PRESSED()       // not yet implemented
 
-#define ESOS_TASK_WAIT_UNTIL_UIF14_SW3_PRESSED()              // not yet implemented
-#define ESOS_TASK_WAIT_UNTIL_UIF14_SW3_RELEASED()             // not yet implemented
+#define ESOS_TASK_WAIT_UNTIL_UIF14_SW3_PRESSED()              ESOS_TASK_WAIT_UNTIL( esos_uiF14_isSW3Pressed() )
+#define ESOS_TASK_WAIT_UNTIL_UIF14_SW3_RELEASED()             ESOS_TASK_WAIT_UNTIL( esos_uiF14_isSW3Released() )
 #define ESOS_TASK_WAIT_UNTIL_UIF14_SW3_PRESSED_AND_RELEASED() // not yet implemented
 #define ESOS_TASK_WAIT_UNTIL_UIF14_SW3_DOUBLE_PRESSED()       // not yet implemented
 

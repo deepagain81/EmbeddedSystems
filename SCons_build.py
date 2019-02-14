@@ -41,24 +41,24 @@ import os
 Import('buildTargets env bin2hex linker_side_effect')
 
 ## Inform SCons about the dependencies in the template-based files
-SConscript('../pic24lib_all/templates/SConscript.py', 'env')
+SConscript('templates/SConscript.py', 'env')
 
 # Common sources used for the PIC24 support library
 # =================================================
 PIC24SupportLibSources = [
-  '../pic24lib_all/lib/src/dataXfer.c',
-  '../pic24lib_all/lib/src/dataXferImpl.c',
-  '../pic24lib_all/lib/src/pic24_adc.c',
-  '../pic24lib_all/lib/src/pic24_clockfreq.c',
-  '../pic24lib_all/lib/src/pic24_configbits.c',
-  '../pic24lib_all/lib/src/pic24_ecan.c',
-  '../pic24lib_all/lib/src/pic24_flash.c',
-  '../pic24lib_all/lib/src/pic24_i2c.c',
-  '../pic24lib_all/lib/src/pic24_serial.c',
-  '../pic24lib_all/lib/src/pic24_spi.c',
-  '../pic24lib_all/lib/src/pic24_timer.c',
-  '../pic24lib_all/lib/src/pic24_uart.c',
-  '../pic24lib_all/lib/src/pic24_util.c' ]
+  'lib/src/dataXfer.c',
+  'lib/src/dataXferImpl.c',
+  'lib/src/pic24_adc.c',
+  'lib/src/pic24_clockfreq.c',
+  'lib/src/pic24_configbits.c',
+  'lib/src/pic24_ecan.c',
+  'lib/src/pic24_flash.c',
+  'lib/src/pic24_i2c.c',
+  'lib/src/pic24_serial.c',
+  'lib/src/pic24_spi.c',
+  'lib/src/pic24_timer.c',
+  'lib/src/pic24_uart.c',
+  'lib/src/pic24_util.c' ]
 
 # Functions used to build the library
 # ===================================
@@ -127,33 +127,29 @@ PIC24SupportLibObjects = env.Object(PIC24SupportLibSources)
 
 # Definition of targets
 # =====================
-if 'NonESOSApplications' in buildTargets:
-  buildWithCommonSources(['NonESOSApplications/*.c'], PIC24SupportLibObjects, env, {}, 'NonESOSApplications')
-
-##if 'reset' in buildTargets:
-##  buildWithCommonSources(['chap08/reset.c'], PIC24SupportLibObjects, env, {}, 'reset')
-##if 'chap08' in buildTargets:
-##  buildWithCommonSources(['chap08/*.c'], PIC24SupportLibObjects, env, {}, 'chap08')
-##if 'chap09' in buildTargets:
-##  buildWithCommonSources(['chap09/*.c'], PIC24SupportLibObjects, env, {}, 'chap09')
-##if 'chap10' in buildTargets:
-##  buildWithCommonSources(['chap10/*.c'],
-##    PIC24SupportLibObjects, env,
-##    {'chap10\\reverse_string.c'  : { 'CPPDEFINES': 'UART1_RX_INTERRUPT'},
-##     'chap10\\reverse_string1.c' : { 'CPPDEFINES': ['UART1_RX_INTERRUPT', 'UART1_TX_INTERRUPT']}},
-##    'chap10')
-##if 'chap11' in buildTargets:
-##  buildWithCommonSources(['chap11/*.c'], PIC24SupportLibObjects, env, {}, 'chap11')
-##if 'chap12' in buildTargets:
-##  buildWithCommonSources(['chap12/*.c'], PIC24SupportLibSources, env, {}, 'chap12')
-##if 'chap13' in buildTargets:
-##  buildWithCommonSources(['chap13/*.c'], PIC24SupportLibObjects, env,
-##  {'chap13\\i2c_multmaster_rstring.c' :  { 'CPPDEFINES': 'CPU_ID=1' },
-##   'chap13\\i2c_multmaster_rstring1.c' : { 'CPPDEFINES': 'CPU_ID=2' }},
-##  'chap13')
-##if 'chap15' in buildTargets:
-##  # Currently, no files.
-##  pass
-##if 'explorer' in buildTargets:
-##  buildWithCommonSources(['explorer16_100p/*.c'], PIC24SupportLibObjects, env, {}, 'explorer')
-##
+if 'reset' in buildTargets:
+  buildWithCommonSources(['chap08/reset.c'], PIC24SupportLibObjects, env, {}, 'reset')
+if 'chap08' in buildTargets:
+  buildWithCommonSources(['chap08/*.c'], PIC24SupportLibObjects, env, {}, 'chap08')
+if 'chap09' in buildTargets:
+  buildWithCommonSources(['chap09/*.c'], PIC24SupportLibObjects, env, {}, 'chap09')
+if 'chap10' in buildTargets:
+  buildWithCommonSources(['chap10/*.c'],
+    PIC24SupportLibObjects, env,
+    {'chap10\\reverse_string.c'  : { 'CPPDEFINES': 'UART1_RX_INTERRUPT'},
+     'chap10\\reverse_string1.c' : { 'CPPDEFINES': ['UART1_RX_INTERRUPT', 'UART1_TX_INTERRUPT']}},
+    'chap10')
+if 'chap11' in buildTargets:
+  buildWithCommonSources(['chap11/*.c'], PIC24SupportLibObjects, env, {}, 'chap11')
+if 'chap12' in buildTargets:
+  buildWithCommonSources(['chap12/*.c'], PIC24SupportLibSources, env, {}, 'chap12')
+if 'chap13' in buildTargets:
+  buildWithCommonSources(['chap13/*.c'], PIC24SupportLibObjects, env,
+  {'chap13\\i2c_multmaster_rstring.c' :  { 'CPPDEFINES': 'CPU_ID=1' },
+   'chap13\\i2c_multmaster_rstring1.c' : { 'CPPDEFINES': 'CPU_ID=2' }},
+  'chap13')
+if 'chap15' in buildTargets:
+  # Currently, no files.
+  pass
+if 'explorer' in buildTargets:
+  buildWithCommonSources(['explorer16_100p/*.c'], PIC24SupportLibObjects, env, {}, 'explorer')

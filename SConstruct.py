@@ -94,7 +94,7 @@ env = Environment(
         # (such as compilers), which errors out on Windows.
         tools = ['gcc', 'gnulink', 'ar', 'zip', 'packaging'],
         options = opts,
-        CPPPATH = '../../../pic24lib_all/lib/include',
+        CPPPATH = 'lib/include',
         CC = 'xc16-gcc',
         LIBPATH = '.',
         AR = 'xc16-ar',
@@ -105,7 +105,7 @@ env = Environment(
         # The warnings provide some lint-like checking. Omitted options: -Wstrict-prototypes -Wold-style-definition complains about void foo(), which should be void foo(void), but isn't worth the work to change.
         CCFLAGS = '-mcpu=${MCU} -O1 -msmart-io=1 -omf=elf -Wall -Wextra -Wdeclaration-after-statement -Wlong-long -fdiagnostics-show-option',
         LINKFLAGS = '-mcpu=${MCU} -omf=elf -Wl,--heap=100,--script="$LINKERSCRIPT",--stack=16,--check-sections,--data-init,--pack-data,--handles,--isr,--no-gc-sections,--fill-upper=0,--stackguard=16,--no-force-link,--smart-io',
-        LINKERSCRIPT = '../../../pic24lib_all/lib/lkr/p${MCU}_bootldr.gld',
+        LINKERSCRIPT = 'lib/lkr/p${MCU}_bootldr.gld',
         ARFLAGS = 'rcs',
         ARSTR = 'Create static library: $TARGET',
         OBJSUFFIX = '.o',
@@ -186,7 +186,7 @@ Help("""Additional targets:
 # First, set up for defining targets.
 #
 # Inform SCons about the dependencies in the template-based files.
-SConscript('../pic24lib_all/templates/SConscript.py', 'env')
+SConscript('templates/SConscript.py', 'env')
 
 # Create a target which zips up library files. Only build it if explicitly requested on the command line.
 if 'zipit' in COMMAND_LINE_TARGETS:
@@ -227,9 +227,9 @@ def buildTargetsSConscript(
   SConscript('SCons_build.py', exports = 'buildTargets env bin2hex linker_side_effect',
     variant_dir = vdir)
 
-### Build over various MCUs
-### -----------------------
-### Build small, non-DMA on the PIC24HJ32GP202
+# Build over various MCUs
+# -----------------------
+# Build small, non-DMA on the PIC24HJ32GP202
 ##buildTargetsSConscript(['chap08', 'chap09', 'chap10', 'chap11', 'chap12'],
 ##env.Clone(MCU='24HJ64GP202'), 'default')
 ##
@@ -276,10 +276,8 @@ def buildTargetsSConscript(
 ##  env.Clone(MCU='33EP128GP504', CPPDEFINES='HARDWARE_PLATFORM=EMBEDDED_C1'), 'embeddedC1')
 ##
 # Build some selected chapter applications for the CAN2 rev.F14 board used in ECE4723 Embedded Systems
-
-
-############buildTargetsSConscript(['NonESOSApplications'],
-############  env.Clone(MCU='33EP512GP806', CPPDEFINES='HARDWARE_PLATFORM=EMBEDDED_F14'), 'embeddedF14')
+##buildTargetsSConscript(['chap08', 'chap09'],
+##  env.Clone(MCU='33EP512GP806', CPPDEFINES='HARDWARE_PLATFORM=EMBEDDED_F14'), 'embeddedF14')
 
 ### Build for the explorer board
 ##buildTargetsSConscript(['explorer'],
@@ -310,17 +308,17 @@ def buildTargetsSConscript(
 ##      env.Clone(MCU='24HJ32GP202',  CPPDEFINES='CLOCK_CONFIG=' + clock), 'default', clock)
 ##    buildTargetsSConscript(['reset'],
 ##      env.Clone(MCU='33FJ128GP802', CPPDEFINES='CLOCK_CONFIG=' + clock), 'default', clock)
-##
-### Misc builds
-### -----------
-### Do a no-float build of reset
+
+# Misc builds
+# -----------
+# Do a no-float build of reset
 ##buildTargetsSConscript(['reset'],
 ##  env.Clone(MCU='24HJ32GP202',  CPPDEFINES='_NOFLOAT'), 'default', 'nofloat')
 
-### Bootloader builds
-### =================
-### Call :doc:`SCons_bootloader.py` with a specific Environment. It creates a
-### variant build named ``bootloader _ hardware_alias _ MCU``.
+# Bootloader builds
+# =================
+# Call :doc:`SCons_bootloader.py` with a specific Environment. It creates a
+# variant build named ``bootloader _ hardware_alias _ MCU``.
 ##def buildTargetsBootloader(
 ##  # The build environment to use. Typically ``env``, though a ``env.Clone``
 ##  # can be used to configure env.
@@ -404,7 +402,7 @@ def buildTargetsEsos(env, mcu, hardware_platform = 'DEFAULT_DESIGN', hardware_al
     # Create an environment for building ESOS.
     env = env.Clone(MCU = mcu)
     env.Append(CPPDEFINES = ['BUILT_ON_ESOS', 'HARDWARE_PLATFORM=' + hardware_platform],
-               CPPPATH = ['../../../pic24lib_all/esos/include', '../../../pic24lib_all/esos/include/pic24','usrlib/include'])
+               CPPPATH = ['esos/include', 'esos/include/pic24','usrlib/include'])
 
     # Now, invoke a variant build using this environment.
     SConscript('SCons_esos.py', exports = 'env bin2hex linker_side_effect',
