@@ -74,7 +74,7 @@ void HARDWARE_CONFIG() {
 	LED2_OFF();
 	LED3_OFF();
 	// misc
-	// configDefaultUART(DEFAULT_BAUDRATE);
+	//configDefaultUART(DEFAULT_BAUDRATE);
 	// printResetCause();
 }
 #endif
