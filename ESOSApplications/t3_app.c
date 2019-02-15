@@ -17,69 +17,108 @@ void user_init(void) {
 	esos_RegisterTask(t3_demo_program);
 }
 
+// menu state variables
+int menu_SW1_state;        // 0 - Off, 1 - On, 2 - Flashing
+int menu_SW2_state;        // 0 - Off, 1 - On, 2 - Flashing
+int menu_SW3_state;        // 0 - Off, 1 - On, 2 - Flashing
+int menu_RPG_speed_state;  // 0 - Stopped, 1 - Low, 2 - Medium, 3 - High
+int menu_RPG_direction;    // 0 - Stopped, 1 - Clockwise, 2 - Counter-Clockwise
+
+
 ESOS_USER_TASK(t3_demo_program) {
 	ESOS_TASK_BEGIN();
-	esos_uiF14_flashLED3(500/2); // flash LED1 constantly with 500ms period
+	// initialize menu variables
+	menu_SW1_state        = 0;
+	menu_SW2_state        = 0;
+	menu_SW3_state        = 0;
+	menu_RPG_speed_state  = 0;
+	menu_RPG_direction    = 0;
+	// initialize menu text
+	ESOS_TASK_WAIT_ON_SEND_STRING("#####Running t3_demo_program#####\n");
+	ESOS_TASK_WAIT_ON_SEND_STRING("TODO: Add instructions for changing variables\n");
+
+	#warning Add menu input and instructions
+
+	// initilize LED3
+	esos_uiF14_flashLED3(500); // flash LED1 constantly with 500ms period
+
+	// main loop
 	while (true) {
-		// print the menu to screen
-		ESOS_TASK_WAIT_ON_SEND_STRING("#####Running t3_demo_program#####\n");
-		ESOS_TASK_WAIT_ON_SEND_STRING("SW1 is ");	if (esos_uiF14_isSW1Pressed()) 
-														{ ESOS_TASK_WAIT_ON_SEND_STRING("pressed.\n"); } 
-													else if (esos_uiF14_isSW1DoublePressed()) 
-														{ ESOS_TASK_WAIT_ON_SEND_STRING("double pressed.\n"); }
-													else if (esos_uiF14_isSW1Released()) 
-														{ ESOS_TASK_WAIT_ON_SEND_STRING("released\n"); }
-													else 
-														{ ESOS_TASK_WAIT_ON_SEND_STRING("???\n"); }
-		ESOS_TASK_WAIT_ON_SEND_STRING("SW2 is ");	if (esos_uiF14_isSW2Pressed()) 
-														{ ESOS_TASK_WAIT_ON_SEND_STRING("pressed.\n"); }
-													else if (esos_uiF14_isSW2DoublePressed()) 
-														{ ESOS_TASK_WAIT_ON_SEND_STRING("double pressed.\n"); }
-													else if (esos_uiF14_isSW2Released()) 
-														{ ESOS_TASK_WAIT_ON_SEND_STRING("released\n"); }
-													else 
-														{ ESOS_TASK_WAIT_ON_SEND_STRING("???\n"); }
-		ESOS_TASK_WAIT_ON_SEND_STRING("SW3 is ");	if (esos_uiF14_isSW3Pressed()) 
-														{ ESOS_TASK_WAIT_ON_SEND_STRING("pressed.\n"); }
-													else if (esos_uiF14_isSW3DoublePressed()) 
-														{ ESOS_TASK_WAIT_ON_SEND_STRING("double pressed.\n"); }
-													else if (esos_uiF14_isSW3Released()) 
-														{ ESOS_TASK_WAIT_ON_SEND_STRING("released\n"); }
-													else 
-														{ ESOS_TASK_WAIT_ON_SEND_STRING("???\n"); }
-		ESOS_TASK_WAIT_ON_SEND_STRING("RPG \n");	
+		ESOS_TASK_WAIT_ON_SEND_STRING("DEBUG - RPG Counter: ");
+		ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING((uint32_t)esos_uiF14_getRPGValue_u16());
+		ESOS_TASK_WAIT_ON_SEND_STRING("  RPG Velocity: ");
+		ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING((uint32_t)esos_uiF14_getRPGVelocity_i16());
+		ESOS_TASK_WAIT_ON_SEND_STRING("  RPG Menu State: ");
+		ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING((uint32_t)menu_RPG_speed_state);
 		ESOS_TASK_WAIT_ON_SEND_STRING("\n");
-		ESOS_TASK_WAIT_ON_SEND_STRING("\n");
-		ESOS_TASK_WAIT_ON_SEND_STRING("\n");
-		ESOS_TASK_WAIT_ON_SEND_STRING("\n");
-		ESOS_TASK_WAIT_ON_SEND_STRING("\n");
-		ESOS_TASK_WAIT_ON_SEND_STRING("\n");
-		ESOS_TASK_WAIT_ON_SEND_STRING("\n");
-		ESOS_TASK_WAIT_ON_SEND_STRING("\n");
-		ESOS_TASK_WAIT_ON_SEND_STRING("\n");
-		ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+		//ESOS_TASK_WAIT_ON_SEND_STRING("DEBUG - RPGA: ");
+		//ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING((uint32_t)RPGA_OUT());
+		//ESOS_TASK_WAIT_ON_SEND_STRING("  RPGB: ");
+		//ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING((uint32_t)RPGB_OUT());
+		//ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+		//// print the menu to screen
+		//ESOS_TASK_WAIT_ON_SEND_STRING("#####Running t3_demo_program#####\n");
+		//ESOS_TASK_WAIT_ON_SEND_STRING("SW1 is ");	if (esos_uiF14_isSW1Pressed()) 
+		//												{ ESOS_TASK_WAIT_ON_SEND_STRING("pressed.\n"); } 
+		//											else if (esos_uiF14_isSW1DoublePressed()) 
+		//												{ ESOS_TASK_WAIT_ON_SEND_STRING("double pressed.\n"); }
+		//											else if (esos_uiF14_isSW1Released()) 
+		//												{ ESOS_TASK_WAIT_ON_SEND_STRING("released\n"); }
+		//											else 
+		//												{ ESOS_TASK_WAIT_ON_SEND_STRING("???\n"); }
+		//ESOS_TASK_WAIT_ON_SEND_STRING("SW2 is ");	if (esos_uiF14_isSW2Pressed()) 
+		//												{ ESOS_TASK_WAIT_ON_SEND_STRING("pressed.\n"); }
+		//											else if (esos_uiF14_isSW2DoublePressed()) 
+		//												{ ESOS_TASK_WAIT_ON_SEND_STRING("double pressed.\n"); }
+		//											else if (esos_uiF14_isSW2Released()) 
+		//												{ ESOS_TASK_WAIT_ON_SEND_STRING("released\n"); }
+		//											else 
+		//												{ ESOS_TASK_WAIT_ON_SEND_STRING("???\n"); }
+		//ESOS_TASK_WAIT_ON_SEND_STRING("SW3 is ");	if (esos_uiF14_isSW3Pressed()) 
+		//												{ ESOS_TASK_WAIT_ON_SEND_STRING("pressed.\n"); }
+		//											else if (esos_uiF14_isSW3DoublePressed()) 
+		//												{ ESOS_TASK_WAIT_ON_SEND_STRING("double pressed.\n"); }
+		//											else if (esos_uiF14_isSW3Released()) 
+		//												{ ESOS_TASK_WAIT_ON_SEND_STRING("released\n"); }
+		//											else 
+		//												{ ESOS_TASK_WAIT_ON_SEND_STRING("???\n"); }
+		//ESOS_TASK_WAIT_ON_SEND_STRING("RPG \n");	
+		//ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+		//ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+		//ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+		//ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+		//ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+		//ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+		//ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+		//ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+		//ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+		//ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 		
 
 		// set state of LED2 based on RPG
 		if (esos_uiF14_isRPGTurningSlow()) {
 			esos_uiF14_turnLED2On();
+			menu_RPG_speed_state = 1;
 		}
 		else if (esos_uiF14_isRPGTurningMedium()) {
-			esos_uiF14_flashLED2(500/2);  // period of 500 ms
+			esos_uiF14_flashLED2(500);  // period of 500 ms
+			menu_RPG_speed_state = 2;
 		}
 		else if (esos_uiF14_isRPGTurningFast()) {
-			esos_uiF14_flashLED2(100/2);  // period of 500 ms
+			esos_uiF14_flashLED2(100);  // period of 100 ms
+			menu_RPG_speed_state = 3;
 		}
 		else {
-			esos_uiF14_isLED2Off();
+			esos_uiF14_turnLED2Off();
+			menu_RPG_speed_state = 0;
 		}
 		// set state of LED1
 		if (esos_uiF14_isSW3Pressed() || esos_uiF14_isSW3DoublePressed()) { // SW3 controls whether it shows state of SW1 or SW2
-			// SW1
+			// SW2 controls LED1 if SW3 is not pressed
 			if (esos_uiF14_isSW1Pressed()) {
 				esos_uiF14_turnLED1On();
 			}
-			else if (esos_uiF14_isSW1DoublePressed()) {
+			else if (esos_uiF14_isSW1DoublePressed()) { // short flashing sequence for a double press; the check for the double press variable resets the double press state
 				// 1
 				esos_uiF14_turnLED1On();
 				ESOS_TASK_WAIT_TICKS(100);
@@ -99,12 +138,11 @@ ESOS_USER_TASK(t3_demo_program) {
 				esos_uiF14_turnLED1Off();
 			}
 		}
-		else { // SW2
-			   // SW2
+		else { // SW2 controls LED1 if SW3 is not pressed
 			if (esos_uiF14_isSW2Pressed()) {
 				esos_uiF14_turnLED1On();
 			}
-			else if (esos_uiF14_isSW2DoublePressed()) {
+			else if (esos_uiF14_isSW2DoublePressed()) { // short flashing sequence for a double press; the check for the double press variable resets the double press state
 				// 1
 				esos_uiF14_turnLED1On();
 				ESOS_TASK_WAIT_TICKS(100);
@@ -123,7 +161,7 @@ ESOS_USER_TASK(t3_demo_program) {
 			else {
 				esos_uiF14_turnLED1Off();
 			}
-		}
+		} // END setting state for LED1
 	ESOS_TASK_YIELD();
 	}
 	ESOS_TASK_END();

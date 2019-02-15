@@ -45,11 +45,9 @@ typedef struct {
 #define __ESOS_MS_TO_TICKS(x)           (x*1)
 #define __ESOS_UIF14_UI_PERIOD_MS       (10)
 #define __SWITCH_DEBOUNCING_INTERVAL	(50)
-#define __SWITCH_DOUBLE_PRESS_INTERVAL	(500)
-#define __RPG_VELOCITY_CALC_PERIOD      (100)
-#define __RPG_SLOW_SPEED_THRESHOLD		(1)
-#define __RPG_MEDIUM_SPEED_THRESHOLD	(2)
-#define __RPG_HIGH_SPEED_THRESHOLD		(3)
+
+// #define __RPG_VELOCITY_CALC_PERIOD      (100)
+
 
 // PRIVATE DATA 
  
@@ -111,6 +109,9 @@ inline bool esos_uiF14_isRPGTurningCCW (void);
 
 void config_esos_uiF14();
 int16_t esos_uiF14_getRPGVelocity_i16 (void);
+
+inline bool RPGA_OUT(void);
+inline bool RPGB_OUT(void);
 
 // PUBLIC API ESOS TASK MACROS
 
