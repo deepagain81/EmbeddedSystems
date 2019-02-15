@@ -1,14 +1,17 @@
-﻿// Created by Benjamin, Marcos, and Mehedi
-// 2/12/2019
+﻿// Author: Benjamin, Marcos, Mehedi, Jorden, and Deepak
+// Date:   02/12/2019
 
 //#include "revF14.h"
 #include "esos_f14ui.h"
 
+// List all user task
 ESOS_USER_TASK (test_LED3); // using find and replace
 ESOS_USER_TASK(test_SW3);   // using find and replace
 ESOS_USER_TASK(test_RPG);
 ESOS_USER_TASK(t3_demo_program);
 
+// User provided functions to config HW, create/initialize SW structures
+// register atleat one task
 void user_init(void) {
 	config_esos_uiF14();
 	//esos_RegisterTask(test_LED3);
@@ -24,8 +27,16 @@ int menu_SW3_state;        // 0 - Off, 1 - On, 2 - Flashing
 int menu_RPG_speed_state;  // 0 - Stopped, 1 - Low, 2 - Medium, 3 - High
 int menu_RPG_direction;    // 0 - Stopped, 1 - Clockwise, 2 - Counter-Clockwise
 
-
+// All user-provided task (must include wait and yield periodically)
 ESOS_USER_TASK(t3_demo_program) {
+	// Books says they go here. ('static' preserved across yeild and wait)
+	// menu state variables
+	/*static int menu_SW1_state;        // 0 - Off, 1 - On, 2 - Flashing
+	static int menu_SW2_state;        // 0 - Off, 1 - On, 2 - Flashing
+	static int menu_SW3_state;        // 0 - Off, 1 - On, 2 - Flashing
+	static int menu_RPG_speed_state;  // 0 - Stopped, 1 - Low, 2 - Medium, 3 - High
+	static int menu_RPG_direction;    // 0 - Stopped, 1 - Clockwise, 2 - Counter-Clockwise*/
+
 	ESOS_TASK_BEGIN();
 	// initialize menu variables
 	menu_SW1_state        = 0;
