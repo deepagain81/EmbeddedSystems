@@ -46,8 +46,16 @@ typedef struct {
 #define __ESOS_UIF14_UI_PERIOD_MS       (10)
 #define __SWITCH_DEBOUNCING_INTERVAL	(50)
 
-// #define __RPG_VELOCITY_CALC_PERIOD      (100)
 
+// #define __RPG_VELOCITY_CALC_PERIOD      (100)
+uint32_t get_RPG_SLOW();
+void set_RPG_SLOW(uint32_t new_value);
+uint32_t get_RPG_MEDIUM();
+void set_RPG_MEDIUM(uint32_t new_value);
+uint32_t get_RPG_FAST();
+void set_RPG_FAST(uint32_t new_value);
+uint32_t get_DOUBLE_PRESS();
+void set_DOUBLE_PRESS(uint32_t new_value);
 
 // PRIVATE DATA 
  

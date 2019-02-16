@@ -22,10 +22,10 @@
 #include "esos_f14ui.h"
 
 // variables
-uint32_t __RPG_SLOW_SPEED_THRESHOLD = 200;
-uint32_t __RPG_MEDIUM_SPEED_THRESHOLD = 100;
-uint32_t __RPG_HIGH_SPEED_THRESHOLD = 50;
-uint32_t __SWITCH_DOUBLE_PRESS_INTERVAL = 500;
+uint32_t __RPG_SLOW_SPEED_THRESHOLD = 3; // in ticks per second
+uint32_t __RPG_MEDIUM_SPEED_THRESHOLD = 6; // in ticks per second
+uint32_t __RPG_HIGH_SPEED_THRESHOLD = 10;
+uint32_t __SWITCH_DOUBLE_PRESS_INTERVAL = 500; // in ms
 
 // data structure
 _st_esos_uiF14Data_t _st_esos_uiF14Data; // should this be in the .c file?
@@ -42,7 +42,39 @@ uint32_t u32_SW3_debounce_Timer_Base;	uint32_t u32_SW3_double_press_Timer_Base;
 // RPG variables
 int32_t i32_RPG_Last_Update_Timer_Base;
 int32_t i32_RPG_velocity;
+int32_t velocity_iterations;
+int32_t previous_calc_counter;
+float f_velocity;
 
+// GET and SET switch thresholds
+uint32_t get_RPG_SLOW() {
+	return __RPG_SLOW_SPEED_THRESHOLD;
+}
+void set_RPG_SLOW(uint32_t new_value) {
+	__RPG_SLOW_SPEED_THRESHOLD = new_value;
+	return;
+}
+uint32_t get_RPG_MEDIUM() {
+	return __RPG_MEDIUM_SPEED_THRESHOLD;
+}
+void set_RPG_MEDIUM(uint32_t new_value) {
+	__RPG_MEDIUM_SPEED_THRESHOLD = new_value;
+	return;
+}
+uint32_t get_RPG_FAST() {
+	return __RPG_HIGH_SPEED_THRESHOLD;
+}
+void set_RPG_FAST(uint32_t new_value) {
+	__RPG_HIGH_SPEED_THRESHOLD = new_value;
+	return;
+}
+uint32_t get_DOUBLE_PRESS() {
+	return __SWITCH_DOUBLE_PRESS_INTERVAL;
+}
+void set_DOUBLE_PRESS(uint32_t new_value) {
+	__SWITCH_DOUBLE_PRESS_INTERVAL = new_value;
+	return;
+}
 
 // PRIVATE FUNCTIONS
 inline void _esos_uiF14_setRPGCounter (uint16_t newValue) {
@@ -270,9 +302,10 @@ inline bool esos_uiF14_isRPGTurningCCW( void ) {
 }
 
 int16_t esos_uiF14_getRPGVelocity_i16( void ) {
-		return ( esos_GetSystemTick() - i32_RPG_Last_Update_Timer_Base < __RPG_SLOW_SPEED_THRESHOLD) ? ((int16_t) i32_RPG_velocity) : 0; // returns time between ticks
+		return (f_velocity < (float)__RPG_SLOW_SPEED_THRESHOLD) ? ((int16_t) f_velocity) : 0; // returns ticks per second
 }
 
+// debug
 inline bool RPGA_OUT(void) {
 		return (_st_esos_uiF14Data.b_RPGAHigh);
 }
@@ -325,6 +358,9 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 		i32_RPG_Last_Update_Timer_Base = 0;
 		i32_RPG_velocity = 0; // time in milliseconds since last tick
 		// initialize RPG
+		velocity_iterations = 0;
+		previous_calc_counter = 0;
+		f_velocity = 0.0;
 		/*previousRPGVelocity = 0;*/
 
 		// LED1 manager
@@ -376,9 +412,9 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 					// was SW1 pressed or double-pressed?
 					if ((u32_SW1_double_press_Timer_Base - u32_SW1_debounce_Timer_Base) > 100) { // was this a double press?
 						// trigger double_press only once
-						if ( ((esos_GetSystemTick() - u32_SW1_double_press_Timer_Base) <= __SWITCH_DOUBLE_PRESS_INTERVAL) && (u32_SW1_double_press_Timer_Base >= 500)) {
+						if ( ((esos_GetSystemTick() - u32_SW1_double_press_Timer_Base) <= __SWITCH_DOUBLE_PRESS_INTERVAL) && (u32_SW1_double_press_Timer_Base >= __SWITCH_DOUBLE_PRESS_INTERVAL)) {
 							_st_esos_uiF14Data.b_SW1DoublePressed = true; // set SW1 double pressed
-							u32_SW1_double_press_Timer_Base -= 500; // make sure the switch double press timer immediately resets upon release
+							u32_SW1_double_press_Timer_Base -= __SWITCH_DOUBLE_PRESS_INTERVAL; // make sure the switch double press timer immediately resets upon release
 						}
 					}
 					else {
@@ -405,9 +441,9 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 																										   // was SW2 pressed or double-pressed?
 					if ((u32_SW2_double_press_Timer_Base - u32_SW2_debounce_Timer_Base) > 100) { // was this a double press?
 						// trigger double_press only once
-						if (((esos_GetSystemTick() - u32_SW2_double_press_Timer_Base) <= __SWITCH_DOUBLE_PRESS_INTERVAL) && (u32_SW2_double_press_Timer_Base >= 500)) {
+						if (((esos_GetSystemTick() - u32_SW2_double_press_Timer_Base) <= __SWITCH_DOUBLE_PRESS_INTERVAL) && (u32_SW2_double_press_Timer_Base >= __SWITCH_DOUBLE_PRESS_INTERVAL)) {
 							_st_esos_uiF14Data.b_SW2DoublePressed = true; // set SW2 double pressed
-							u32_SW2_double_press_Timer_Base -= 500; // make sure the switch double press timer immediately resets upon release
+							u32_SW2_double_press_Timer_Base -= __SWITCH_DOUBLE_PRESS_INTERVAL; // make sure the switch double press timer immediately resets upon release
 						}
 					}
 					else {
@@ -434,9 +470,9 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 																										   // was SW3 pressed or double-pressed?
 					if ((u32_SW3_double_press_Timer_Base - u32_SW3_debounce_Timer_Base) > 100) { // was this a double press?
 						// trigger double_press only once
-						if (((esos_GetSystemTick() - u32_SW3_double_press_Timer_Base) <= __SWITCH_DOUBLE_PRESS_INTERVAL) && (u32_SW3_double_press_Timer_Base >= 500)) {
+						if (((esos_GetSystemTick() - u32_SW3_double_press_Timer_Base) <= __SWITCH_DOUBLE_PRESS_INTERVAL) && (u32_SW3_double_press_Timer_Base >= __SWITCH_DOUBLE_PRESS_INTERVAL)) {
 							_st_esos_uiF14Data.b_SW3DoublePressed = true; // set SW3 double pressed
-							u32_SW3_double_press_Timer_Base -= 500; // make sure the switch double press timer immediately resets upon release
+							u32_SW3_double_press_Timer_Base -= __SWITCH_DOUBLE_PRESS_INTERVAL; // make sure the switch double press timer immediately resets upon release
 						}
 					}
 					else {
@@ -497,7 +533,19 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 				i32_RPG_Last_Update_Timer_Base = esos_GetSystemTick(); // RPG has updated
 			}
 			// calculate velocity
-			i32_RPG_velocity = ((int32_t)esos_GetSystemTick() - i32_RPG_Last_Update_Timer_Base);
+			if (velocity_iterations >= 20) {
+				// calculate velocity
+				f_velocity = (float)(esos_uiF14_getRPGValue_u16() - previous_calc_counter) * 5 / 0.200; // ticks per second - 24 in a rotation
+
+				previous_calc_counter = esos_uiF14_getRPGValue_u16();
+				velocity_iterations = 0;
+			}
+			else {
+				velocity_iterations++;
+			}
+
+			//i32_RPG_velocity = ((int32_t)esos_GetSystemTick() - i32_RPG_Last_Update_Timer_Base);
+
 			//// move value of RPG counter to last timer for velocity calculations
 			//if (u32_RPG_Velocity_Timer_Base + __RPG_VELOCITY_CALC_PERIOD <= esos_GetSystemTick()) {
 			//	_st_esos_uiF14Data.u16_lastRPGCounter = _st_esos_uiF14Data.u16_RPGCounter; // record the amount the counter moved in 100ms
