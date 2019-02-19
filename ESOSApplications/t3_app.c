@@ -362,6 +362,10 @@ ESOS_USER_TASK(test_RPG) {
 		else {
 			esos_uiF14_turnLED1Off();
 		}
+		// OUTPUT VELOCITY
+		ESOS_TASK_WAIT_ON_SEND_STRING("RPG Position: ");
+		ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING((uint8_t)esos_uiF14_getRPGValue_u16());
+		ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 		// output message if turning
 		if (esos_uiF14_isRPGTurning()) {
 			ESOS_TASK_WAIT_ON_SEND_STRING("TURNING!!!");
