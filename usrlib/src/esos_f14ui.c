@@ -288,7 +288,7 @@ inline bool esos_uiF14_isRPGTurningMedium( void ) {
 }
 
 inline bool esos_uiF14_isRPGTurningFast( void ) {
-		return ((esos_uiF14_getRPGVelocity_i16() >= (int16_t)__RPG_HIGH_SPEED_THRESHOLD) && (esos_uiF14_getRPGVelocity_i16() != 0));
+		return ( (abs(esos_uiF14_getRPGVelocity_i16()) >= (int16_t)__RPG_HIGH_SPEED_THRESHOLD) && (esos_uiF14_getRPGVelocity_i16() != 0));
 }
 
 inline bool esos_uiF14_isRPGTurningCW( void ) {
@@ -302,7 +302,7 @@ inline bool esos_uiF14_isRPGTurningCCW( void ) {
 }
 
 int16_t esos_uiF14_getRPGVelocity_i16( void ) {
-		return (f_velocity < (float)__RPG_SLOW_SPEED_THRESHOLD) ? ((int16_t) f_velocity) : 0; // returns ticks per second
+		return (f_velocity < (float)__RPG_SLOW_SPEED_THRESHOLD) ? 0 : ((int16_t) f_velocity); // returns ticks per second
 }
 
 // debug
@@ -535,7 +535,7 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 			// calculate velocity
 			if (velocity_iterations >= 20) {
 				// calculate velocity
-				f_velocity = (float)(esos_uiF14_getRPGValue_u16() - previous_calc_counter) * 5 / 0.200; // ticks per second - 24 in a rotation
+				f_velocity = (float)(esos_uiF14_getRPGValue_u16() - previous_calc_counter) / 0.200; // ticks per second - 24 in a rotation
 
 				previous_calc_counter = esos_uiF14_getRPGValue_u16();
 				velocity_iterations = 0;
