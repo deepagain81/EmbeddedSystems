@@ -43,7 +43,7 @@ uint32_t u32_SW3_debounce_Timer_Base;	uint32_t u32_SW3_double_press_Timer_Base;
 int32_t i32_RPG_Last_Update_Timer_Base;
 int32_t i32_RPG_velocity;
 int32_t velocity_iterations;
-int32_t previous_calc_counter;
+uint32_t u32_previous_calc_counter;
 float f_velocity;
 
 // GET and SET switch thresholds
@@ -359,7 +359,7 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 		i32_RPG_velocity = 0; // time in milliseconds since last tick
 		// initialize RPG
 		velocity_iterations = 0;
-		previous_calc_counter = 0;
+		u32_previous_calc_counter = 0;
 		f_velocity = 0.0;
 		/*previousRPGVelocity = 0;*/
 
@@ -535,9 +535,9 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 			// calculate velocity
 			if (velocity_iterations >= 20) {
 				// calculate velocity
-				f_velocity = (float)(esos_uiF14_getRPGValue_u16() - previous_calc_counter) / 0.200; // ticks per second - 24 in a rotation
+				f_velocity = (float)(esos_uiF14_getRPGValue_u16() - u32_previous_calc_counter) / 0.200; // ticks per second - 24 in a rotation
 
-				previous_calc_counter = esos_uiF14_getRPGValue_u16();
+				u32_previous_calc_counter = esos_uiF14_getRPGValue_u16();
 				velocity_iterations = 0;
 			}
 			else {
