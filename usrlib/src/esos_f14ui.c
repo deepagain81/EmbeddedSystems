@@ -22,9 +22,9 @@
 #include "esos_f14ui.h"
 
 // variables
-uint32_t __RPG_SLOW_SPEED_THRESHOLD = 3; // in ticks per second
-uint32_t __RPG_MEDIUM_SPEED_THRESHOLD = 6; // in ticks per second
-uint32_t __RPG_HIGH_SPEED_THRESHOLD = 10;
+uint32_t __RPG_SLOW_SPEED_THRESHOLD = 1; // in ticks per second
+uint32_t __RPG_MEDIUM_SPEED_THRESHOLD = 12; // in ticks per second
+uint32_t __RPG_HIGH_SPEED_THRESHOLD = 30;
 uint32_t __SWITCH_DOUBLE_PRESS_INTERVAL = 500; // in ms
 
 // data structure
