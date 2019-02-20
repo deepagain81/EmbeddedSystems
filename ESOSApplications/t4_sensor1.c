@@ -5,19 +5,19 @@
 #include "esos_f14ui.h"
 
 // List all user task
+ESOS_USER_TASK(heartbeat_LED3);
 ESOS_USER_TASK(display_ADC);
 ESOS_USER_TASK(set_sample_state);
 ESOS_USER_TASK(sample_R5);
-ESOS_USER_TASK(heartbeat_LED3);
 
 // User provided functions to config HW, create/initialize SW structures
 // register atleat one task
 void user_init(void) {
 	config_esos_uiF14();
-	//esos_RegisterTask(test_LED3);
-	//esos_RegisterTask(test_SW3);
-	//esos_RegisterTask(test_RPG);
 	esos_RegisterTask(heartbeat_LED3);
+	esos_RegisterTask(display_ADC);
+	esos_RegisterTask(set_sample_state);
+	esos_RegisterTask(sample_R5);
 }
 
 // menu state variables
@@ -102,50 +102,3 @@ ESOS_USER_TASK(sample_R5) {
 		}
 	ESOS_TASK_END();
 }
-
-ESOS_USER_TASK(test_RPG) {
-	ESOS_TASK_BEGIN();
-	ESOS_TASK_WAIT_ON_SEND_STRING("Beginning test_RPG1...\n");
-	while (1) {
-		// test different speeds using LED1
-		if (esos_uiF14_isRPGTurningSlow()) {
-			esos_uiF14_turnLED1On();
-		}
-		else if (esos_uiF14_isRPGTurningMedium()) {
-			esos_uiF14_flashLED1(500);
-		}
-		else if (esos_uiF14_isRPGTurningFast()) {
-			esos_uiF14_flashLED1(200);
-		}
-		else {
-			esos_uiF14_turnLED1Off();
-		}
-		// OUTPUT VELOCITY
-		ESOS_TASK_WAIT_ON_SEND_STRING("RPG Position: ");
-		ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING((uint8_t)esos_uiF14_getRPGValue_u16());
-		ESOS_TASK_WAIT_ON_SEND_STRING("\n");
-		// output message if turning
-		if (esos_uiF14_isRPGTurning()) {
-			ESOS_TASK_WAIT_ON_SEND_STRING("TURNING!!!");
-		}
-		// test CW and CCW with LED 2 and 3
-		if (esos_uiF14_isRPGTurningCW()) {
-			ESOS_TASK_WAIT_ON_SEND_STRING(" CW\n");
-		}
-		if (esos_uiF14_isRPGTurningCCW()) {
-			ESOS_TASK_WAIT_ON_SEND_STRING(" CCW\n");
-		}
-		ESOS_TASK_YIELD();
-	}
-	ESOS_TASK_END();
-}
-//inline uint16_t esos_uiF14_getRPGValue_u16(void);
-//inline bool esos_uiF14_isRPGTurning(void);
-//inline bool esos_uiF14_isRPGTurningSlow(void);
-//inline bool esos_uiF14_isRPGTurningMedium(void);
-//inline bool esos_uiF14_isRPGTurningFast(void);
-//inline bool esos_uiF14_isRPGTurningCW(void);
-//inline bool esos_uiF14_isRPGTurningCCW(void);
-//
-//void config_esos_uiF14();
-//int16_t esos_uiF14_getRPGVelocity_i16(void);
