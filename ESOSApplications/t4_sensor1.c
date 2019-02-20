@@ -5,10 +5,10 @@
 #include "esos_f14ui.h"
 
 // List all user task
-ESOS_USER_TASK (hearbeat); // using find and replace
-ESOS_USER_TASK(display_ADC);   // using find and replace
+ESOS_USER_TASK(display_ADC);
 ESOS_USER_TASK(set_sample_state);
 ESOS_USER_TASK(sample_R5);
+ESOS_USER_TASK(heartbeat_LED3);
 
 // User provided functions to config HW, create/initialize SW structures
 // register atleat one task
@@ -17,11 +17,11 @@ void user_init(void) {
 	//esos_RegisterTask(test_LED3);
 	//esos_RegisterTask(test_SW3);
 	//esos_RegisterTask(test_RPG);
-	esos_RegisterTask(t3_demo_program);
+	esos_RegisterTask(heartbeat_LED3);
 }
 
 // menu state variables
-bool sample_state;        // False - Off, True - On
+bool sample_state;        // 0 - Off, 1 - On
 
 // ESOS In handling variables
 uint8_t ESOS_digit_in;
@@ -49,14 +49,14 @@ uint32_t get_number_from_array(uint8_t *uint8_buf, int next, int *error) {
 }
 
 // All user-provided task (must include wait and yield periodically)
-ESOS_USER_TASK(heartbeat) {
+ESOS_USER_TASK(heartbeat_LED3) {
 
 	ESOS_TASK_BEGIN();
 		
-		while (true){
-			esos_uiF14_turnLED1On();
+		while (1){
+			esos_uiF14_turnLED3On();
 			ESOS_TASK_WAIT_TICKS(250); // may be better as 50 for heartbeat
-			esos_uiF14_turnLED1Off();
+			esos_uiF14_turnLED3Off();
 			ESOS_TASK_WAIT_TICKS(250); // may be better as 200 for heartbeat
 		}
 		
@@ -65,11 +65,11 @@ ESOS_USER_TASK(heartbeat) {
 
 ESOS_USER_TASK(test_LED3) {
 	ESOS_TASK_BEGIN();
-		while (true) {
+		while (1) {
 			ESOS_TASK_WAIT_UNTIL_UIF14_SW1_PRESSED();
 			
 			ESOS_TASK_WAIT_ON_SEND_STRING("ADC result: ");
-			ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_TASK_WAIT_SENSOR_QUICK_READ()); // echo ADC Value
+			//ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_TASK_WAIT_SENSOR_QUICK_READ()); // echo ADC Value
 			ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 			
 			ESOS_TASK_WAIT_UNTIL_UIF14_SW1_RELEASED();
@@ -79,11 +79,11 @@ ESOS_USER_TASK(test_LED3) {
 
 ESOS_USER_TASK(set_sample_state) {
 	ESOS_TASK_BEGIN();
-		while(true) {
-			if (esos_uiF14_isSW2Pressed() && sample_state == False){
-				sample_state = True;
-			}else if ((esos_uiF14_isSW1Pressed() || esos_uiF14_isSW2Pressed()) && sample_state == True){
-				sample_state = False;
+		while(1) {
+			if (esos_uiF14_isSW2Pressed() && sample_state == 0){
+				sample_state = 1;
+			}else if ((esos_uiF14_isSW1Pressed() || esos_uiF14_isSW2Pressed()) && sample_state == 1){
+				sample_state = 0;
 			}
 			ESOS_TASK_YIELD();
 		}
@@ -92,8 +92,8 @@ ESOS_USER_TASK(set_sample_state) {
 
 ESOS_USER_TASK(sample_R5) {
 	ESOS_TASK_BEGIN();
-		while(true) {
-			if (sample_state == True){
+		while(1) {
+			if (sample_state == 1){
 				ESOS_TASK_WAIT_ON_SEND_STRING("ADC result: ");
 				//ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_TASK_WAIT_SENSOR_QUICK_READ());//print R5 to bootloader
 				ESOS_TASK_WAIT_ON_SEND_STRING("\n");
@@ -106,7 +106,7 @@ ESOS_USER_TASK(sample_R5) {
 ESOS_USER_TASK(test_RPG) {
 	ESOS_TASK_BEGIN();
 	ESOS_TASK_WAIT_ON_SEND_STRING("Beginning test_RPG1...\n");
-	while (true) {
+	while (1) {
 		// test different speeds using LED1
 		if (esos_uiF14_isRPGTurningSlow()) {
 			esos_uiF14_turnLED1On();
