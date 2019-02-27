@@ -15,7 +15,7 @@
 #include "esos.h"
 #include "esos_pic24.h"
 //#include "revF14.h"
-
+#include "esos_pic24_sensor.h"
 // STRUCTURES
 
 typedef struct {

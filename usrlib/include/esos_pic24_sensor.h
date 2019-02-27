@@ -32,7 +32,8 @@
 
 #ifndef ESOS_PIC24_SENSOR_H
 #define ESOS_PIC24_SENSOR_H
-
+#include "revF14.h"
+#include "esos_sensor.h"
 /**
  * \addtogroup ESOS_Task_Sensor_Service
  * @{
@@ -45,7 +46,7 @@
 
 /* I N C L U D E S **********************************************************/
 //#include <esos_hwxxx.h>
-#include <esos_sensor.h> // use our version, not the normal one (?)
+#include <esos_sensor.h> // should I be using our version, not the normal one (?)
 
 /* P U B L I C  P R O T O T Y P E S *****************************************/
 void esos_sensor_config_hw (esos_sensor_ch_t, esos_sensor_vref_t);

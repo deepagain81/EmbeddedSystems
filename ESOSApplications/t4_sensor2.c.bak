@@ -67,7 +67,7 @@ ESOS_USER_TASK(heartbeat_LED3) {
 	ESOS_TASK_END();
 }
 
-ESOS_USER_TASK(test_LED3) {
+ESOS_USER_TASK(display_ADC) {
 	ESOS_TASK_BEGIN();
 		while (1) {
 			ESOS_TASK_WAIT_UNTIL_UIF14_SW1_PRESSED();
@@ -76,91 +76,91 @@ ESOS_USER_TASK(test_LED3) {
 			//ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_TASK_WAIT_SENSOR_QUICK_READ()); // echo ADC Value
 			
 			switch(processing_Mode) {
-				case 2 :
+				case 2:
 					switch(num_Samples) {
-						case 2 :
+						case 2:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_AVG4());// echo ADC Value
 							break;
-						case 3 :
+						case 3:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_AVG8());// echo ADC Value
 							break;
-						case 4 :
+						case 4:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_AVG16());// echo ADC Value
 							break;
-						case 5 :
+						case 5:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_AVG32());// echo ADC Value
 							break;
-						case 6 :
+						case 6:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_AVG64());// echo ADC Value
 							break;
-						default :
+						default:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_AVG2());// echo ADC Value
 					}
 					break;
-				case 3 :
+				case 3:
 					switch(num_Samples) {
-						case 2 :
+						case 2:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MIN4());// echo ADC Value
 							break;
-						case 3 :
+						case 3:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MIN8());// echo ADC Value
 							break;
-						case 4 :
+						case 4:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MIN16());// echo ADC Value
 							break;
-						case 5 :
+						case 5:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MIN32());// echo ADC Value
 							break;
-						case 6 :
+						case 6:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MIN64());// echo ADC Value
 							break;
-						default :
+						default:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MIN2());// echo ADC Value
 					}
 					break;
-				case 4 :
+				case 4:
 					switch(num_Samples) {
-						case 2 :
+						case 2:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MAX4());// echo ADC Value
 							break;
-						case 3 :
+						case 3:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MAX8());// echo ADC Value
 							break;
-						case 4 :
+						case 4:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MAX16());// echo ADC Value
 							break;
-						case 5 :
+						case 5:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MAX32());// echo ADC Value
 							break;
-						case 6 :
+						case 6:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MAX64());// echo ADC Value
 							break;
-						default :
+						default:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MAX2());// echo ADC Value
 					}
 					break;
-				case 5 :
+				case 5:
 					switch(num_Samples) {
-						case 2 :
+						case 2:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MEDIAN4());// echo ADC Value
 							break;
-						case 3 :
+						case 3:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MEDIAN8());// echo ADC Value
 							break;
-						case 4 :
+						case 4:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MEDIAN16());// echo ADC Value
 							break;
-						case 5 :
+						case 5:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MEDIAN32());// echo ADC Value
 							break;
-						case 6 :
+						case 6:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MEDIAN64());// echo ADC Value
 							break;
-						default :
+						default:
 							ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_MEDIAN2());// echo ADC Value
 					}
 					break;
-				default :
+				default:
 					ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_SENSOR_ONE_SHOT());// echo ADC Value
 			}
 			
@@ -198,6 +198,7 @@ ESOS_USER_TASK(sample_R5) {
 }
 
 ESOS_USER_TASK(change_process) {
+	int i;
 	ESOS_TASK_BEGIN();
 	while (1) {
 		if (esos_uiF14_isSW3Pressed()){

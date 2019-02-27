@@ -83,6 +83,13 @@ ESOS_USER_TASK(t3_demo_program) {
 	ESOS_TASK_WAIT_ON_SEND_STRING("Switch double press interval (a), RPG Slow Threshold (b), RPG Medium Threshold (c), and RPG High Threshold(d) may be modified.\n");
 	ESOS_TASK_WAIT_ON_SEND_STRING("Enter the corresponding letter, a space, then the new value.\n");
 	ESOS_TASK_WAIT_ON_SEND_STRING("EXAMPLE: 'a 8000'\n");
+		ESOS_TASK_WAIT_ON_SEND_STRING("Intial Values: RPG Slow Threshold: ");
+		ESOS_TASK_WAIT_ON_SEND_UINT8(get_RPG_SLOW());
+		ESOS_TASK_WAIT_ON_SEND_STRING("   Intial Values: RPG Medium Threshold: ");
+		ESOS_TASK_WAIT_ON_SEND_UINT8(get_RPG_MEDIUM());
+		ESOS_TASK_WAIT_ON_SEND_STRING("   Intial Values: RPG Fast Threshold: ");
+		ESOS_TASK_WAIT_ON_SEND_UINT8(get_RPG_FAST());
+		ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 
 	#warning Add menu input and instructions
 
@@ -252,6 +259,19 @@ ESOS_USER_TASK(t3_demo_program) {
 		else {
 			esos_uiF14_turnLED2Off();
 			menu_RPG_speed_state = 0;
+		}
+		// output direction of RPG turning, for testing purposes
+		if (esos_uiF14_isRPGTurning()) {
+			ESOS_TASK_WAIT_ON_SEND_STRING("RPG is turning ");
+			if (esos_uiF14_isRPGTurningCW()) {
+				ESOS_TASK_WAIT_ON_SEND_STRING("CW\n");
+			}
+			else if (esos_uiF14_isRPGTurningCCW()) {
+				ESOS_TASK_WAIT_ON_SEND_STRING("CCW\n");
+			}
+			else {
+				ESOS_TASK_WAIT_ON_SEND_STRING("???\n");
+			}
 		}
 		// set state of LED1
 		if (esos_uiF14_isSW3Pressed() || esos_uiF14_isSW3DoublePressed()) { // SW3 controls whether it shows state of SW1 or SW2

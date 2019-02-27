@@ -52,7 +52,8 @@ for sourceFile in Glob('ESOSApplications/*.c', True, True, True):
         'esos/src/pic24/esos_pic24_rs232.c',
         'esos/src/pic24/esos_pic24_spi.c',
         'esos/src/pic24/esos_pic24_tick.c',
-        'usrlib/src/esos_f14ui.c'])
+        'usrlib/src/esos_f14ui.c',
+        'usrlib/src/esos_pic24_sensor.c'])
     linker_side_effect(env, p)
     # Convert it to a .hex
     bin2hex(sourceFile, env, 'esos')

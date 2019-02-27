@@ -20,6 +20,7 @@
 // user libraries
 #include "revF14.h"
 #include "esos_f14ui.h"
+#include "esos_pic24_sensor.h"
 
 // variables
 uint32_t __RPG_SLOW_SPEED_THRESHOLD = 1; // in ticks per second
@@ -45,6 +46,7 @@ int32_t i32_RPG_velocity;
 int32_t velocity_iterations;
 uint32_t u32_previous_calc_counter;
 float f_velocity;
+uint32_t u32_counter_difference;
 
 // GET and SET switch thresholds
 uint32_t get_RPG_SLOW() {
@@ -292,7 +294,6 @@ inline bool esos_uiF14_isRPGTurningFast( void ) {
 }
 
 inline bool esos_uiF14_isRPGTurningCW( void ) {
-	#warning not tested
 		return ((_st_esos_uiF14Data.u16_RPGCounter > _st_esos_uiF14Data.u16_lastRPGCounter) && esos_uiF14_isRPGTurning());
 }
 
@@ -361,6 +362,7 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 		velocity_iterations = 0;
 		u32_previous_calc_counter = 0;
 		f_velocity = 0.0;
+		u32_counter_difference = 0;
 		/*previousRPGVelocity = 0;*/
 
 		// LED1 manager
@@ -535,7 +537,9 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 			// calculate velocity
 			if (velocity_iterations >= 20) {
 				// calculate velocity
-				f_velocity = (float)(esos_uiF14_getRPGValue_u16() - u32_previous_calc_counter) / 0.200; // ticks per second - 24 in a rotation
+				u32_counter_difference = ( esos_uiF14_getRPGValue_u16() > u32_previous_calc_counter ) ? (esos_uiF14_getRPGValue_u16() - u32_previous_calc_counter) : (u32_previous_calc_counter - esos_uiF14_getRPGValue_u16()) ;
+				//f_velocity = (float)(esos_uiF14_getRPGValue_u16() - u32_previous_calc_counter) / 0.200; // ticks per second - 24 in a rotation
+				f_velocity = (float)(u32_counter_difference) / 0.200; // ticks per second - 24 in a rotation
 
 				u32_previous_calc_counter = esos_uiF14_getRPGValue_u16();
 				velocity_iterations = 0;
