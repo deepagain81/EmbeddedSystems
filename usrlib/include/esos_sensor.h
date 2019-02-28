@@ -138,7 +138,7 @@ BOOL ESOS_SENSOR_CLOSE(void);
 
 #define SIGNAL_ADC_BUSY           esos_SetSystemFlag(__ESOS_SYS_ADC_IS_BUSY)
 
-#define MAX16BIT (0x0000)  /*USER ADDITION: Required for esos_sensor.c user task _WAIT_SENSOR_READ - see line 262*/
+#define MAX16BIT (0xFFFF)  /*USER ADDITION: Required for esos_sensor.c user task _WAIT_SENSOR_READ - see line 262*/
 
 #define ESOS_TASK_WAIT_WHILE_ADC_BUSY do { \
 	/*esos_ClearSystemFlag(__ESOS_SYS_ADC_IS_BUSY);*/ \

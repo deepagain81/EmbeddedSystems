@@ -15,7 +15,8 @@ ESOS_USER_TASK(change_process);
 // register atleat one task
 void user_init(void) {
 	config_esos_uiF14();
-	esos_RegisterTask(heartbeat_LED3);
+	/*esos_RegisterTask(heartbeat_LED3);*/
+	esos_uiF14_flashLED3(250); // flash the led with a period of 250ms
 	esos_RegisterTask(display_ADC);
 	esos_RegisterTask(set_sample_state);
 	esos_RegisterTask(sample_R5);
@@ -53,19 +54,19 @@ uint32_t get_number_from_array(uint8_t *uint8_buf, int next, int *error) {
 }
 
 // All user-provided task (must include wait and yield periodically)
-ESOS_USER_TASK(heartbeat_LED3) {
-
-	ESOS_TASK_BEGIN();
-		
-		while (1){
-			esos_uiF14_turnLED3On();
-			ESOS_TASK_WAIT_TICKS(250); // may be better as 50 for heartbeat
-			esos_uiF14_turnLED3Off();
-			ESOS_TASK_WAIT_TICKS(250); // may be better as 200 for heartbeat
-		}
-		
-	ESOS_TASK_END();
-}
+//ESOS_USER_TASK(heartbeat_LED3) {
+//
+//	ESOS_TASK_BEGIN();
+//		
+//		while (1){
+//			esos_uiF14_turnLED3On();
+//			ESOS_TASK_WAIT_TICKS(250); // may be better as 50 for heartbeat
+//			esos_uiF14_turnLED3Off();
+//			ESOS_TASK_WAIT_TICKS(250); // may be better as 200 for heartbeat
+//		}
+//		
+//	ESOS_TASK_END();
+//}
 
 ESOS_USER_TASK(display_ADC) {
 	ESOS_TASK_BEGIN();
