@@ -31,7 +31,10 @@ int next_position; // ptr for the next place to put a number
 uint32_t new_threshold_value;
 int error_value;
 uint16_t sensor_value;
+uint16_t sensor_voltage;
 bool SW2_HELD;
+
+
 
 // All user-provided task (must include wait and yield periodically)
 ESOS_USER_TASK(heartbeat_LED3) {
@@ -87,18 +90,24 @@ ESOS_USER_TASK(set_sample_state) {
 ESOS_USER_TASK(sample_R5) {
 	ESOS_TASK_BEGIN();
 		while(1) {
-			if (sample_state == 1){
+			if (sample_state == 1)
+			{
 				ESOS_TASK_WAIT_ON_AVAILABLE_SENSOR(ESOS_SENSOR_CH02, ESOS_SENSOR_VREF_5V0); // activate the ADC - read from AN2(VPOT) - VREF 5V (currently the default)
-				ESOS_TASK_WAIT_SENSOR_QUICK_READ(sensor_value); // get sensor_value
-
 				ESOS_TASK_WAIT_ON_SEND_STRING("ADC result: ");
-				ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(sensor_value); // echo ADC Value
-				ESOS_TASK_WAIT_ON_SEND_STRING("\n");
-
-				ESOS_SENSOR_CLOSE(); // turn off the ADC
-			}
+				// uint16 into Voltage
+				ESOS_TASK_WAIT_SENSOR_READ(sensor_value, ESOS_SENSOR_AVG2, ESOS_SENSOR_FORMAT_VOLTAGE);
+				sensor_value /= 3; // into the 3 v range
+				ESOS_TASK_WAIT_ON_SEND_UINT8(sensor_value/1000 + '0'); // echo ADC Value - add ASCII offset up to numbers with '0'
+				ESOS_TASK_WAIT_ON_SEND_STRING(".");
+				ESOS_TASK_WAIT_ON_SEND_UINT8(sensor_value % 1000 / 100 + '0');
+				ESOS_TASK_WAIT_ON_SEND_UINT8(sensor_value % 100  / 10  + '0');
+				ESOS_TASK_WAIT_ON_SEND_UINT8(sensor_value % 10   / 1   + '0');
+				ESOS_TASK_WAIT_ON_SEND_STRING(" Volts\n");
+				ESOS_SENSOR_CLOSE();
+				ESOS_TASK_WAIT_TICKS(1000);
+			}// end if
 			ESOS_TASK_WAIT_TICKS(1000);
-		}
+		}// end while
 	ESOS_TASK_END();
 }
 
