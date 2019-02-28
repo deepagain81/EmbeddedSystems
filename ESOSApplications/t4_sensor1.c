@@ -32,24 +32,6 @@ uint32_t new_threshold_value;
 int error_value;
 uint16_t sensor_value;
 
-// get a number out of a char array - next is the index that would be written to next (?)
-uint32_t get_number_from_array(uint8_t *uint8_buf, int next, int *error) {
-	int i;
-	int place = 1;
-	int value = 0;
-	*error = 0;
-	for (i = next - 2; i >= 1 && uint8_buf[i] != ' '; i--) { // evaluate numbers from last character(next - 2) to first that is not a command or space (index 1)
-		if (uint8_buf[i] > '9' || uint8_buf[i] < '0') { // character is within ASCII number range
-			*error = 1;
-			return 0;
-		}
-		// convert to values I can use in math
-		value += (uint8_buf[i] - (uint8_t)'0') * place; // I want integer values to do math with, so I subtract the lowest ASCII code of the numbers (0)
-		place *= 10; // increase place by power of 10 each time
-	}
-	return value;
-}
-
 // All user-provided task (must include wait and yield periodically)
 ESOS_USER_TASK(heartbeat_LED3) {
 
