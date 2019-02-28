@@ -31,6 +31,7 @@ int next_position; // ptr for the next place to put a number
 uint32_t new_threshold_value;
 int error_value;
 uint16_t sensor_value;
+bool SW2_HELD;
 
 // All user-provided task (must include wait and yield periodically)
 ESOS_USER_TASK(heartbeat_LED3) {
@@ -51,17 +52,16 @@ ESOS_USER_TASK(display_ADC) {
 	ESOS_TASK_BEGIN();
 		while (1) {
 			ESOS_TASK_WAIT_UNTIL_UIF14_SW1_PRESSED();
+			ESOS_TASK_WAIT_UNTIL_UIF14_SW1_RELEASED(); // trigger read when SW1 depressed
 			
 			ESOS_TASK_WAIT_ON_AVAILABLE_SENSOR(ESOS_SENSOR_CH02,ESOS_SENSOR_VREF_5V0); // activate the ADC - read from AN2(VPOT) - VREF 5V (currently the default)
 			ESOS_TASK_WAIT_SENSOR_QUICK_READ(sensor_value); // get sensor_value
 
 			ESOS_TASK_WAIT_ON_SEND_STRING("ADC result: ");
-			ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(sensor_value); // echo ADC Value
+			ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(sensor_value); // echo ADC Value
 			ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 			
 			ESOS_SENSOR_CLOSE(); // turn off the ADC
-
-			ESOS_TASK_WAIT_UNTIL_UIF14_SW1_RELEASED();
 		}
 	ESOS_TASK_END();
 }
@@ -69,11 +69,15 @@ ESOS_USER_TASK(display_ADC) {
 ESOS_USER_TASK(set_sample_state) {
 	ESOS_TASK_BEGIN();
 		while(1) {
-			if (esos_uiF14_isSW2Pressed() && sample_state == 0){
+			if (esos_uiF14_isSW2Pressed() && sample_state == 0 && !SW2_HELD){
 				sample_state = 1;
-				ESOS_TASK_WAIT_UNTIL_UIF14_SW1_RELEASED();
-			}else if ((esos_uiF14_isSW1Pressed() || esos_uiF14_isSW2Pressed()) && sample_state == 1){
+				SW2_HELD = 1;
+			}else if ((esos_uiF14_isSW1Pressed() || esos_uiF14_isSW2Pressed()) && sample_state == 1 && !SW2_HELD){
 				sample_state = 0;
+				SW2_HELD = 1;
+			}
+			else {
+				SW2_HELD = 0;
 			}
 			ESOS_TASK_YIELD();
 		}
@@ -88,7 +92,7 @@ ESOS_USER_TASK(sample_R5) {
 				ESOS_TASK_WAIT_SENSOR_QUICK_READ(sensor_value); // get sensor_value
 
 				ESOS_TASK_WAIT_ON_SEND_STRING("ADC result: ");
-				ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(sensor_value); // echo ADC Value
+				ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(sensor_value); // echo ADC Value
 				ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 
 				ESOS_SENSOR_CLOSE(); // turn off the ADC
