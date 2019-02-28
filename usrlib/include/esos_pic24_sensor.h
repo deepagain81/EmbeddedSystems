@@ -32,8 +32,10 @@
 
 #ifndef ESOS_PIC24_SENSOR_H
 #define ESOS_PIC24_SENSOR_H
+// libraries
 #include "revF14.h"
-#include "esos_sensor.h"
+#include <esos_sensor.h>
+
 /**
  * \addtogroup ESOS_Task_Sensor_Service
  * @{

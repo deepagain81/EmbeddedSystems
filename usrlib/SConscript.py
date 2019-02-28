@@ -9,6 +9,8 @@
 
 ## Common sources used for the PIC24 support library
 ESOSSupportLibSources = [ 
-  'src/esos_f14ui.c']
+  'src/esos_f14ui.c',
+  'src/esos_sensor.c',
+  'src/esos_pic24_sensor.c']
 
 env = env.Clone(CPPDEFINES=['BUILT_ON_ESOS' '_NOASSERT'])

@@ -84,11 +84,11 @@ ESOS_USER_TASK(t3_demo_program) {
 	ESOS_TASK_WAIT_ON_SEND_STRING("Enter the corresponding letter, a space, then the new value.\n");
 	ESOS_TASK_WAIT_ON_SEND_STRING("EXAMPLE: 'a 8000'\n");
 		ESOS_TASK_WAIT_ON_SEND_STRING("Intial Values: RPG Slow Threshold: ");
-		ESOS_TASK_WAIT_ON_SEND_UINT8(get_RPG_SLOW());
-		ESOS_TASK_WAIT_ON_SEND_STRING("   Intial Values: RPG Medium Threshold: ");
-		ESOS_TASK_WAIT_ON_SEND_UINT8(get_RPG_MEDIUM());
-		ESOS_TASK_WAIT_ON_SEND_STRING("   Intial Values: RPG Fast Threshold: ");
-		ESOS_TASK_WAIT_ON_SEND_UINT8(get_RPG_FAST());
+		ESOS_TASK_WAIT_ON_SEND_UINT8((uint8_t)get_RPG_SLOW());
+		ESOS_TASK_WAIT_ON_SEND_STRING("\nIntial Values: RPG Medium Threshold: ");
+		ESOS_TASK_WAIT_ON_SEND_UINT8((uint8_t)get_RPG_MEDIUM());
+		ESOS_TASK_WAIT_ON_SEND_STRING("\nIntial Values: RPG Fast Threshold: ");
+		ESOS_TASK_WAIT_ON_SEND_UINT8((uint8_t)get_RPG_FAST());
 		ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 
 	#warning Add menu input and instructions

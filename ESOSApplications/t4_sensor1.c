@@ -3,7 +3,7 @@
 
 //#include "revF14.h"
 #include "esos_f14ui.h"
-#include "esos_sensor.h"
+//#include "esos_sensor.h"
 
 // List all user task
 ESOS_USER_TASK(heartbeat_LED3);
@@ -32,7 +32,7 @@ uint32_t new_threshold_value;
 int error_value;
 uint16_t sensor_value;
 
-// get a number out of an array
+// get a number out of a char array - next is the index that would be written to next (?)
 uint32_t get_number_from_array(uint8_t *uint8_buf, int next, int *error) {
 	int i;
 	int place = 1;
@@ -89,6 +89,7 @@ ESOS_USER_TASK(set_sample_state) {
 		while(1) {
 			if (esos_uiF14_isSW2Pressed() && sample_state == 0){
 				sample_state = 1;
+				ESOS_TASK_WAIT_UNTIL_UIF14_SW1_RELEASED();
 			}else if ((esos_uiF14_isSW1Pressed() || esos_uiF14_isSW2Pressed()) && sample_state == 1){
 				sample_state = 0;
 			}
@@ -101,9 +102,14 @@ ESOS_USER_TASK(sample_R5) {
 	ESOS_TASK_BEGIN();
 		while(1) {
 			if (sample_state == 1){
+				ESOS_TASK_WAIT_ON_AVAILABLE_SENSOR(ESOS_SENSOR_CH02, ESOS_SENSOR_VREF_5V0); // activate the ADC - read from AN2(VPOT) - VREF 5V (currently the default)
+				ESOS_TASK_WAIT_SENSOR_QUICK_READ(sensor_value); // get sensor_value
+
 				ESOS_TASK_WAIT_ON_SEND_STRING("ADC result: ");
-				//ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(ESOS_TASK_WAIT_SENSOR_QUICK_READ());//print R5 to bootloader
+				ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(sensor_value); // echo ADC Value
 				ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+
+				ESOS_SENSOR_CLOSE(); // turn off the ADC
 			}
 			ESOS_TASK_WAIT_TICKS(1000);
 		}

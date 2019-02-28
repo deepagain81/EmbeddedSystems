@@ -11,16 +11,17 @@
 //#include "esos.h"
 //#include "esos_pic24.h"
 //#include "revF14.h"
-#include <stdlib.h> // for the function abs()
+//#include <stdlib.h> // for the function abs()
 //#include <stdbool.h>
 //#include <stdint.h>
 //#include "esos.h"
 //#include "esos_pic24.h"
 
 // user libraries
-#include "revF14.h"
+//#include "revF14.h"
 #include "esos_f14ui.h"
-#include "esos_pic24_sensor.h"
+
+//#include "esos_pic24_sensor.h"
 
 // variables
 uint32_t __RPG_SLOW_SPEED_THRESHOLD = 1; // in ticks per second

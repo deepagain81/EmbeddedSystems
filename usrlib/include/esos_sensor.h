@@ -44,6 +44,10 @@
 /* I N C L U D E S **********************************************************/
 #include <esos.h>
 
+// USER ADDITION: without this include, linking will fail
+#include <esos_pic24_sensor.h>
+
+
 /* E N U M S ****************************************************************/
 
 /**
@@ -127,12 +131,14 @@ typedef enum {
 
 ESOS_CHILD_TASK(_WAIT_ON_AVAILABLE_SENSOR, esos_sensor_ch_t, esos_sensor_vref_t);
 ESOS_CHILD_TASK(_WAIT_SENSOR_QUICK_READ, uint16_t *u16_data);
-ESOS_CHILD_TASK(_WAIT_SENSOR_READ, uint16_t *u16_data, uint8_t, esos_sensor_format_t);
+ESOS_CHILD_TASK(_WAIT_SENSOR_READ, uint16_t *pu16_data, uint8_t, esos_sensor_format_t); // USER EDIT: corrected 1st argument to match esos_sensor.c implementation (was u16_data - now pu16_data) 
 BOOL ESOS_SENSOR_CLOSE(void);
 
 /* D E F I N E S ************************************************************/
 
 #define SIGNAL_ADC_BUSY           esos_SetSystemFlag(__ESOS_SYS_ADC_IS_BUSY)
+
+#define MAX16BIT (0x0000)  /*USER ADDITION: Required for esos_sensor.c user task _WAIT_SENSOR_READ - see line 262*/
 
 #define ESOS_TASK_WAIT_WHILE_ADC_BUSY do { \
 	esos_ClearSystemFlag(__ESOS_SYS_ADC_IS_BUSY); \

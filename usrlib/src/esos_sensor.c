@@ -31,6 +31,9 @@
 #include <esos.h>
 #include <stdlib.h>
 
+
+
+
 /**
 * Waits until a sensor is available.
 *
@@ -365,14 +368,14 @@ ESOS_CHILD_TASK(_WAIT_SENSOR_READ, uint16_t* pu16_data, uint8_t e_senProcess, es
 			: vRef == ESOS_SENSOR_VREF_4V096 ? 40960
 			: vRef == ESOS_SENSOR_VREF_5V0 ?   50000
 			: 0;
-		const uint32_t u32_divDeciMillivolts = (uint32_t)(*u16_data) * u32_maxDeciMilliVolts;
+		const uint32_t u32_divDeciMillivolts = (uint32_t)(*pu16_data) * u32_maxDeciMilliVolts;  // USER EDIT: changed (*u16_data) to (*pu16_data)
 		const uint32_t u32_DeciMillivolts = u32_divDeciMillivolts / 4096;
 		*pu16_data = (uint16_t)u32_DeciMillivolts;
 	}
 
 	//Export as Percent
 	else if(FMT_CONSTANT & ESOS_SENSOR_FORMAT_PERCENT) {
-		*pu16_data = (uint32_t)(*u16_data) * 100 / 4096;
+		*pu16_data = (uint32_t)(*pu16_data) * 100 / 4096;  // USER EDIT: changed (*u16_data) to (*pu16_data)
 	}
 
 
