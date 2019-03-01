@@ -72,7 +72,19 @@ ESOS_USER_TASK(display_ADC) {
 ESOS_USER_TASK(set_sample_state) {
 	ESOS_TASK_BEGIN();
 		while(1) {
-			if (esos_uiF14_isSW2Pressed() && sample_state == 0 && !SW2_HELD){
+			if (esos_uiF14_isSW2Pressed() && sample_state == 0) {
+				sample_state = 1;
+				ESOS_TASK_WAIT_UNTIL_UIF14_SW2_RELEASED();
+			}
+			else if(esos_uiF14_isSW1Pressed() && sample_state == 1){
+				sample_state = 0;
+				ESOS_TASK_WAIT_UNTIL_UIF14_SW1_RELEASED();
+			}
+			else if (esos_uiF14_isSW2Pressed() && sample_state == 1) {
+				sample_state = 0;
+				ESOS_TASK_WAIT_UNTIL_UIF14_SW2_RELEASED();
+			}
+			/*if (esos_uiF14_isSW2Pressed() && sample_state == 0 && !SW2_HELD){
 				sample_state = 1;
 				SW2_HELD = 1;
 			}else if ((esos_uiF14_isSW1Pressed() || esos_uiF14_isSW2Pressed()) && sample_state == 1 && !SW2_HELD){
@@ -81,7 +93,7 @@ ESOS_USER_TASK(set_sample_state) {
 			}
 			else {
 				SW2_HELD = 0;
-			}
+			}*/
 			ESOS_TASK_YIELD();
 		}
 	ESOS_TASK_END();
@@ -104,7 +116,6 @@ ESOS_USER_TASK(sample_R5) {
 				ESOS_TASK_WAIT_ON_SEND_UINT8(sensor_value % 10   / 1   + '0');
 				ESOS_TASK_WAIT_ON_SEND_STRING(" Volts\n");
 				ESOS_SENSOR_CLOSE();
-				ESOS_TASK_WAIT_TICKS(1000);
 			}// end if
 			ESOS_TASK_WAIT_TICKS(1000);
 		}// end while
