@@ -156,6 +156,7 @@ LCDE_RESET();\
 LCDRW_RESET();\
 LCDRS_RESET();\
 }
+// CALL at the beginning of every user program during user_init
 #define HARDWARE_CONFIG() ({\
 configClock();\
 /*setup hardware pinouts*/\
