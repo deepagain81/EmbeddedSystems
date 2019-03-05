@@ -64,7 +64,98 @@
 // Temperature sensor
 #define VTEMP (_RB3)
 #define CONFIG_VTEMP() CONFIG_RB3_AS_ANALOG()
-
+// LCD pins
+#define LCDD0 (RE0)
+#define LCDD1 (RE1)
+#define LCDD2 (RE2)
+#define LCDD3 (RE3)
+	/*LCDD0 to LCDD3 unused during 4 bit operation*/
+#define LCDD4 (RE4)
+#define LCDD5 (RE5)
+#define LCDD6 (RE6)
+#define LCDD7 (RE7)
+#define LCDE  (RD10)
+#define LCDRW (RD11)
+#define LCDRS (RC12)
+#define LCD_BUSY (LCDD7) /*must be in read mode, with register select (RS) must be set to LOW to check busy flag*/
+	/*LCD PIN SET MACROS */
+#define LCDD0_SET() (LCDD0=1)
+#define LCDD0_RESET() (LCDD0=0)
+#define LCDD1_SET() (LCDD1=1)
+#define LCDD1_RESET() (LCDD1=0)
+#define LCDD2_SET() (LCDD2=1)
+#define LCDD2_RESET() (LCDD2=0)
+#define LCDD3_SET() (LCDD3=1)
+#define LCDD3_RESET() (LCDD3=0)
+#define LCDD4_SET() (LCDD4=1)
+#define LCDD4_RESET() (LCDD4=0)
+#define LCDD5_SET() (LCDD5=1)
+#define LCDD5_RESET() (LCDD5=0)
+#define LCDD6_SET() (LCDD6=1)
+#define LCDD6_RESET() (LCDD6=0)
+#define LCDD7_SET() (LCDD7=1)
+#define LCDD7_RESET() (LCDD7=0)
+#define LCDE_SET() (LCDE=1)
+#define LCDE_RESET() (LCDE=0)
+#define LCDRW_SET() (LCDRW=1)
+#define LCDRW_RESET() (LCDRW=0)
+#define LCDRS_SET() (LCDRS=1)
+#define LCDRS_RESET() (LCDRS=0)
+#define LCD_BUSY_SET() (LCD_BUSY=1)
+#define LCD_BUSY_RESET() (LCD_BUSY=0)
+	/*LCD HARDWARE TEST PINS*/
+#define IS_LCDD0_SET() (LCDD0==1)
+#define IS_LCDD1_SET() (LCDD1==1)
+#define IS_LCDD2_SET() (LCDD2==1)
+#define IS_LCDD3_SET() (LCDD3==1)
+#define IS_LCDD4_SET() (LCDD4==1)
+#define IS_LCDD5_SET() (LCDD5==1)
+#define IS_LCDD6_SET() (LCDD6==1)
+#define IS_LCDD7_SET() (LCDD7==1)
+#define IS_LCDE_SET()  (LCDE==1)
+#define IS_LCDRW_SET() (LCDRW==1)
+#define IS_LCDRS_SET() (LCDRS==1)
+#define IS_LCD_BUSY_SET() (LCD_BUSY==1)
+#define IS_LCD_BUSY() (IS_LCD_BUSY_SET()) /*FOR EASIER USE - preferred over IS_LCD_BUSY_SET()*/
+	/*LCD CONFIGURATION MACROS*/
+#define CONFIG_LCD_DATA_PINS_READ_MODE() {\
+CONFIG_RE0_AS_DIG_INPUT();\
+CONFIG_RE1_AS_DIG_INPUT();\
+CONFIG_RE2_AS_DIG_INPUT();\
+CONFIG_RE3_AS_DIG_INPUT();\
+CONFIG_RE4_AS_DIG_INPUT();\
+CONFIG_RE5_AS_DIG_INPUT();\
+CONFIG_RE6_AS_DIG_INPUT();\
+CONFIG_RE7_AS_DIG_INPUT();\
+}
+#define CONFIG_LCD_DATA_PINS_WRITE_MODE() {\
+CONFIG_RE0_AS_DIG_OUTPUT();\
+CONFIG_RE1_AS_DIG_OUTPUT();\
+CONFIG_RE2_AS_DIG_OUTPUT();\
+CONFIG_RE3_AS_DIG_OUTPUT();\
+CONFIG_RE4_AS_DIG_OUTPUT();\
+CONFIG_RE5_AS_DIG_OUTPUT();\
+CONFIG_RE6_AS_DIG_OUTPUT();\
+CONFIG_RE7_AS_DIG_OUTPUT();\
+}
+#define LCD_INITIAL_CONFIG() {\
+CONFIG_RD10_AS_DIG_OUTPUT();/*LCD ENABLE PIN - should always be in write mode*/\
+CONFIG_RD11_AS_DIG_OUTPUT();/*LCDRW PIN - should always be in write mode*/\
+CONFIG_RD12_AS_DIG_OUTPUT();/*LCD REGISTER SELECT PIN - should always be in write mode*/\
+CONFIG_LCD_DATA_PINS_WRITE_MODE();\
+/*SET INITIAL LCD PIN VALUES*/\
+LCDD0_RESET();\
+LCDD1_RESET();\
+LCDD2_RESET();\
+LCDD3_RESET();\
+LCDD4_RESET();\
+LCDD5_RESET();\
+LCDD6_RESET();\
+LCDD7_RESET();\
+LCDE_RESET();\
+LCDRW_RESET();\
+LCDRS_RESET();\
+}
 #define HARDWARE_CONFIG() ({\
 configClock();\
 /*setup hardware pinouts*/\
@@ -78,6 +169,7 @@ CONFIG_RPGA();\
 CONFIG_RPGB();\
 CONFIG_VPOT();\
 CONFIG_VTEMP();\
+LCD_INITIAL_CONFIG();\
 /*LED Default State*/\
 LED1_OFF();\
 LED2_OFF();\
