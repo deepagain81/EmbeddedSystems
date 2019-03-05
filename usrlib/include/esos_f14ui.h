@@ -19,6 +19,8 @@
 #include "esos_sensor.h"
 // STRUCTURES
 
+#warning TODO: Add one-shot mode to SW1, SW2, and SW3
+
 typedef struct {
     bool b_SW1Pressed;
     bool b_SW1DoublePressed;
@@ -148,6 +150,7 @@ inline bool RPGB_OUT(void);
                           } while (0) 
 #define ESOS_TASK_WAIT_UNTIL_UIF14_SW3_DOUBLE_PRESSED()       ESOS_TASK_WAIT_UNTIL(esos_uiF14_isSW3DoublePressed())
 
+#warning ESOS RPG WAIT CLAUSES NOT YET IMPLEMENTED
 #define ESOS_TASK_WAIT_UNTIL_UIF14_RPG_UNTIL_TURNS()          // not yet implemented
 #define ESOS_TASK_WAIT_UNTIL_UIF14_RPG_UNTIL_TURNS_CW()       // not yet implemented
 #define ESOS_TASK_WAIT_UNTIL_UIF14_RPG_UNTIL_TURNS_CCW()      // not yet implemented
