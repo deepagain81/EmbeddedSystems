@@ -37,6 +37,7 @@
 #include "revF14.h"
 
 /*** T H E   C O D E *************************************************/
+#warning LCD config function is not completed.
 void __esos_lcd44780_pic24_config ( void )
 {
     // Set up the hardware aspects of the pic24 interface of the LCD module service

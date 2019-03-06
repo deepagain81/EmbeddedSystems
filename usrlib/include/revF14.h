@@ -65,18 +65,18 @@
 #define VTEMP (_RB3)
 #define CONFIG_VTEMP() CONFIG_RB3_AS_ANALOG()
 // LCD pins
-#define LCDD0 (RE0)
-#define LCDD1 (RE1)
-#define LCDD2 (RE2)
-#define LCDD3 (RE3)
+#define LCDD0 (_RE0)
+#define LCDD1 (_RE1)
+#define LCDD2 (_RE2)
+#define LCDD3 (_RE3)
 	/*LCDD0 to LCDD3 unused during 4 bit operation*/
-#define LCDD4 (RE4)
-#define LCDD5 (RE5)
-#define LCDD6 (RE6)
-#define LCDD7 (RE7)
-#define LCDE  (RD10)
-#define LCDRW (RD11)
-#define LCDRS (RC12)
+#define LCDD4 (_RE4)
+#define LCDD5 (_RE5)
+#define LCDD6 (_RE6)
+#define LCDD7 (_RE7)
+#define LCDE  (_RD10)
+#define LCDRW (_RD11)
+#define LCDRS (_RC12)
 #define LCD_BUSY (LCDD7) /*must be in read mode, with register select (RS) must be set to LOW to check busy flag*/
 
 //*******************************************************************//	
@@ -144,7 +144,7 @@ CONFIG_RE7_AS_DIG_OUTPUT();\
 #define LCD_INITIAL_CONFIG() {\
 CONFIG_RD10_AS_DIG_OUTPUT();/*LCD ENABLE PIN - should always be in write mode*/\
 CONFIG_RD11_AS_DIG_OUTPUT();/*LCDRW PIN - should always be in write mode*/\
-CONFIG_RD12_AS_DIG_OUTPUT();/*LCD REGISTER SELECT PIN - should always be in write mode*/\
+CONFIG_RC12_AS_DIG_OUTPUT();/*LCD REGISTER SELECT PIN - should always be in write mode*/\
 CONFIG_LCD_DATA_PINS_WRITE_MODE();\
 /*SET INITIAL LCD PIN VALUES*/\
 LCDD0_RESET();\

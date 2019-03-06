@@ -42,18 +42,16 @@
 
 /* I N C L U D E S **********************************************************/
 #include <esos_lcd44780.h>
+#include "revF14.h"
 
 /* HW-SPECIFIC MACROS *******************************************************/
-#define  __esos_lcd44780_hw_config()		__esos_lcd44780_hwxxx_config
 
-#define  __esos_lcd44780_hw_setDataPins() \
-    __esos_lcd44780_hwxxx_setDataPins
-#define  __esos_lcd44780_hw_getDataPins() \
-    __esos_lcd44780_hwxxx_getDataPins
-#define  __esos_lcd44780_hw_configDataPinsAsInput() \
-    __esos_lcd44780_hwxxx_configDataPinsAsInput
-#define  __esos_lcd44780_hw_configDataPinsAsOutput() \
-    __esos_lcd44780_hwxxx_configDataPinsAsOutput
+
+// void __esos_lcd44780_hw_config();
+// void __esos_lcd44780_hw_setDataPins();
+// uint8_t __esos_lcd44780_hw_getDataPins();
+// void  __esos_lcd44780_hw_configDataPinsAsInput();
+// void  __esos_lcd44780_hw_configDataPinsAsOutput();
 
 #define  __ESOS_LCD44780_HW_SET_E_HIGH()          LCDE_SET()        // E=1
 #define  __ESOS_LCD44780_HW_SET_E_LOW()           LCDE_RESET()      // E=0

@@ -38,7 +38,7 @@
 #include <stdlib.h>
 
 // Main data structure for updating lcd44780
-struct {
+typedef struct {
 	BOOL b_cursorPositionNeedsUpdate;
 	uint8_t u8_cursorRow;
 	uint8_t u8_cursorCol;
@@ -57,7 +57,9 @@ struct {
 
 	BOOL ab_customCharNeedsUpdate[ESOS_LCD44780_NUM_CUSTOM_CHARS];
 	esos_lcd44780_char_t ast_customChar[ESOS_LCD44780_NUM_CUSTOM_CHARS];
-} esos_lcd44780_vars;
+} esos_lcd44780_vars_t;
+
+esos_lcd44780_vars_t esos_lcd44780_vars;
 
 // Hidden LCD character module service/housekeeping task
 ESOS_USER_TASK( __esos_lcd44780_service )
@@ -70,15 +72,15 @@ ESOS_USER_TASK( __esos_lcd44780_service )
 
 	// TODO: remove the magic numbers in this section
 	ESOS_TASK_WAIT_TICKS(100);			// Wait >15 msec after power is applied
-	ESOS_TASK_WAIT_LCD44780_WRITE_COMMAND_NOWAIT(0x30);
+	ESOS_TASK_WAIT_LCD44780_WRITE_COMMAND_NOWAIT(0x30); // set data length 8
 	ESOS_TASK_WAIT_TICKS(10);			// must wait 5ms, busy flag not available
-	ESOS_TASK_WAIT_LCD44780_WRITE_COMMAND_NOWAIT(0x30);
+	ESOS_TASK_WAIT_LCD44780_WRITE_COMMAND_NOWAIT(0x30); // set data length 8
 	ESOS_TASK_WAIT_TICKS(1);			// must wait 160us, busy flag not available
-	ESOS_TASK_WAIT_LCD44780_WRITE_COMMAND_NOWAIT(0x30);
+	ESOS_TASK_WAIT_LCD44780_WRITE_COMMAND_NOWAIT(0x30); // set data length 8
 	ESOS_TASK_WAIT_TICKS(1);			// must wait 160us, busy flag not available
-	ESOS_TASK_WAIT_LCD44780_WRITE_COMMAND(0x38);
-	ESOS_TASK_WAIT_LCD44780_WRITE_COMMAND(0x10);
-	ESOS_TASK_WAIT_LCD44780_WRITE_COMMAND(0x0C);
+	ESOS_TASK_WAIT_LCD44780_WRITE_COMMAND(0x38); // Function set: data length 8, 2 lines
+	ESOS_TASK_WAIT_LCD44780_WRITE_COMMAND(0x10); // Move cursor left (?)
+	ESOS_TASK_WAIT_LCD44780_WRITE_COMMAND(0x0C); // set display ON, cursor off, blink off
 	ESOS_TASK_WAIT_LCD44780_WRITE_COMMAND(0x06);
 
 	// Send startup sequence from datasheet
@@ -217,7 +219,7 @@ void esos_lcd44780_setCursor( uint8_t u8_row, uint8_t u8_column )
     // Move cursor to (u8_row,u8_column) without changing memory buffer or the display
 	// TODO:  Write hardware-independent code here
 	esos_lcd44780_vars.u8_cursorRow = u8_row;
-	esos_lcd44780_vars.u8_curserCol = u8_col;
+	esos_lcd44780_vars.u8_cursorCol = u8_column;
 	// not sure about this
 	esos_lcd44780_vars.b_cursorPositionNeedsUpdate = TRUE;
 }
@@ -237,10 +239,11 @@ void esos_lcd44780_writeBuffer( uint8_t u8_row, uint8_t u8_column, uint8_t *pu8_
 {
     // Write u8_bufflen characters from pu8_data to (u8_row,u8_column)
 	// TODO:  Write hardware-independent code here
-	for (static int i= 0; i< u8_bufflen; i++)
+	int i;
+	for (i= 0; i< u8_bufflen; i++)
 		{
 			esos_lcd44780_vars.aac_lcdBuffer[u8_row][((u8_column+i)%ESOS_LCD44780_MEM_WIDTH)] = pu8_data[i];
-			esos_lcd44780_vars.ab_lcdBufferNeedsUpdate[u8_row][u8_column] = TRUE;
+			esos_lcd44780_vars.ab_lcdBufferNeedsUpdate[u8_row][((u8_column+i)%ESOS_LCD44780_MEM_WIDTH)] = TRUE;
 		}
 }
 
@@ -248,11 +251,11 @@ void esos_lcd44780_getBuffer( uint8_t u8_row, uint8_t u8_column, uint8_t *pu8_da
 {
     // Return pu8_data with u8_bufflen characters currently displayed beginning at (u8_row,u8_column)
 	// TODO:  Write hardware-independent code here
-	for (static int i= 0; i< u8_bufflen; i++)
+	int i;
+	for (i= 0; i< u8_bufflen; i++)
 		{
 			pu8_data[i] = esos_lcd44780_vars.aac_lcdBuffer[u8_row][((u8_column+i)%ESOS_LCD44780_MEM_WIDTH)];
 		}
-		return pu8_data;
 }
 
 void esos_lcd44780_writeString( uint8_t u8_row, uint8_t u8_column, char *psz_data )
@@ -265,6 +268,9 @@ void esos_lcd44780_writeString( uint8_t u8_row, uint8_t u8_column, char *psz_dat
 			esos_lcd44780_vars.aac_lcdBuffer[u8_row][((u8_column+i)%ESOS_LCD44780_MEM_WIDTH)] = psz_data[i];
 			esos_lcd44780_vars.ab_lcdBufferNeedsUpdate[u8_row][((u8_column+i)%ESOS_LCD44780_MEM_WIDTH)] = TRUE;
 			i++;
+			// if(i > 100){
+			// 	ESOS_TASK_WAIT_ON_SEND_STRING("esos_lcd44780_writeString() data is abnormally long...\n");
+			// }
 		}//end while
 }
 
@@ -280,7 +286,7 @@ BOOL esos_lcd44780_getCursorDisplay( void )
 {
     // Return cursor display state
 	// TODO:  Write hardware-independent code here
-	return esos_lcd44780_varas.b_cursorShown;
+	return esos_lcd44780_vars.b_cursorShown;
 }
 
 void esos_lcd44780_setCursorBlink( BOOL u8_state )
@@ -317,7 +323,10 @@ void esos_lcd44780_setCustomChar( uint8_t u8_charSlot, uint8_t *pu8_charData )
 {
     // Set custom character memory for u8_charSlot to data in pu8_charData
 	// TODO:  Write hardware-independent code here
-	esos_lcd44780_vars.ast_customChar[u8_charSlot] = pu8_charData;
+	int n;
+	for(n = 0; n < 8; n++){
+		esos_lcd44780_vars.ast_customChar[u8_charSlot].au8_data[n] = pu8_charData[n];
+	}
 	esos_lcd44780_vars.ab_customCharNeedsUpdate[u8_charSlot] = TRUE;
 
 }
@@ -326,9 +335,13 @@ void esos_lcd44780_getCustomChar( uint8_t u8_charSlot, uint8_t *pu8_charData )
 {
     // Return pu8_charData with custom character memory for u8_charSlot
 	// TODO:  Write hardware-independent code here
-	#warning Not sure if returning a pointer cause a problem....!
-	pu8_charData = esos_lcd44780_vars.ast_customChar[u8_charSlot];
-	return pu8_charData;
+	#warning Not sure if giving a direct pointer will cause a problem... Should data be duplicated?
+	//pu8_charData = esos_lcd44780_vars.ast_customChar[u8_charSlot];
+	int n;
+	for(n = 0; n < 8; n++){
+		pu8_charData[n] = esos_lcd44780_vars.ast_customChar[u8_charSlot].au8_data[n];
+	}
+
 }
 
 BOOL esos_lcd44780_isCurrent( void )

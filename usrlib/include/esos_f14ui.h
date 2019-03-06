@@ -14,7 +14,7 @@
 #include <stdint.h>
 #include "esos.h"
 #include "esos_pic24.h"
-//#include "revF14.h"
+#include "revF14.h"
 //#include "esos_pic24_sensor.h"
 #include "esos_sensor.h"
 // STRUCTURES
