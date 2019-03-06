@@ -33,37 +33,62 @@
  */
  
 /*** I N C L U D E S *************************************************/
-#include "esos_hwxxx_lcd.h"
+#include "esos_pic24_lcd44780.h"
+#include "revF14.h"
 
 /*** T H E   C O D E *************************************************/
-void __esos_lcd44780_hwxxx_config ( void )
+void __esos_lcd44780_pic24_config ( void )
 {
-    // Set up the hardware aspects of the HWxxx interface of the LCD module service
+    // Set up the hardware aspects of the pic24 interface of the LCD module service
     //    direction, thresholds, etc beyond what is already done in esos_lcd44780_config()
 
 
 }
 
-void __esos_lcd44780_hwxxx_setDataPins( uint8_t u8_data) {
+void __esos_lcd44780_pic24_setDataPins( uint8_t u8_data) {
 	// write the hardware-specific code to take the u8_data passed in
 	// and place it on the appropriate data pins
-	
+	if (u8_data & 0b00000001 != 0) { __ESOS_LCD44780_HW_SET_D0(); }
+	else { __ESOS_LCD44780_HW_CLEAR_D0(); }
+	if (u8_data & 0b00000010 != 0) { __ESOS_LCD44780_HW_SET_D1(); }
+	else { __ESOS_LCD44780_HW_CLEAR_D1(); }
+	if (u8_data & 0b00000100 != 0) { __ESOS_LCD44780_HW_SET_D2(); }
+	else { __ESOS_LCD44780_HW_CLEAR_D2(); }
+	if (u8_data & 0b00001000 != 0) { __ESOS_LCD44780_HW_SET_D3(); }
+	else { __ESOS_LCD44780_HW_CLEAR_D3(); }
+	if (u8_data & 0b00010000 != 0) { __ESOS_LCD44780_HW_SET_D4(); }
+	else { __ESOS_LCD44780_HW_CLEAR_D4(); }
+	if (u8_data & 0b00100000 != 0) { __ESOS_LCD44780_HW_SET_D5(); }
+	else { __ESOS_LCD44780_HW_CLEAR_D5(); }
+	if (u8_data & 0b01000000 != 0) { __ESOS_LCD44780_HW_SET_D6(); }
+	else { __ESOS_LCD44780_HW_CLEAR_D6(); }
+	if (u8_data & 0b10000000 != 0) { __ESOS_LCD44780_HW_SET_D7(); }
+	else { __ESOS_LCD44780_HW_CLEAR_D7(); }
 }
 
-uint8_t __esos_lcd44780_hwxxx_getDataPins( void ) {
+uint8_t __esos_lcd44780_pic24_getDataPins( void ) {
 	// write the hardware-specific code to read the appropriate data pins
 	// and create the uint8 data to return to the caller
-	
+	uint8_t value = 0;
+	if (__ESOS_LCD44780_HW_GET_D0()) { value | 0b00000001; }
+	if (__ESOS_LCD44780_HW_GET_D1()) { value | 0b00000010; }
+	if (__ESOS_LCD44780_HW_GET_D2()) { value | 0b00000100; }
+	if (__ESOS_LCD44780_HW_GET_D3()) { value | 0b00001000; }
+	if (__ESOS_LCD44780_HW_GET_D4()) { value | 0b00010000; }
+	if (__ESOS_LCD44780_HW_GET_D5()) { value | 0b00100000; }
+	if (__ESOS_LCD44780_HW_GET_D6()) { value | 0b01000000; }
+	if (__ESOS_LCD44780_HW_GET_D7()) { value | 0b10000000; }
+	return value;
 }
 
-void __esos_lcd44780_hwxxx_configDataPinsAsInput( void ) {
+void __esos_lcd44780_pic24_configDataPinsAsInput( void ) {
 	// write the hardware-specific code to set the LCD character module
 	// data pins to be "inputs" to prepare for a read of the LCD module
-	
+	CONFIG_LCD_DATA_PINS_READ_MODE();
 }
 
-void __esos_lcd44780_hwxxx_configDataPinsAsOutput( void ) {
+void __esos_lcd44780_pic24_configDataPinsAsOutput( void ) {
 	// write the hardware-specific code to set the LCD character module
 	// data pins to be "outputs" to prepare for a write to the LCD module
-	
+	CONFIG_LCD_DATA_PINS_WRITE_MODE();
 }
