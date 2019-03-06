@@ -44,54 +44,54 @@
 #include <esos_lcd.h>
 
 /* HW-SPECIFIC MACROS *******************************************************/
-#define  __esos_lcd44780_hw_config		__esos_lcd44780_hwxxx_config
+#define  __esos_lcd44780_hw_config()		__esos_lcd44780_hwxxx_config
 
-#define  __esos_lcd44780_hw_setDataPins \
+#define  __esos_lcd44780_hw_setDataPins() \
     __esos_lcd44780_hwxxx_setDataPins
-#define  __esos_lcd44780_hw_getDataPins \
+#define  __esos_lcd44780_hw_getDataPins() \
     __esos_lcd44780_hwxxx_getDataPins
-#define  __esos_lcd44780_hw_configDataPinsAsInput \
+#define  __esos_lcd44780_hw_configDataPinsAsInput() \
     __esos_lcd44780_hwxxx_configDataPinsAsInput
-#define  __esos_lcd44780_hw_configDataPinsAsOutput \
+#define  __esos_lcd44780_hw_configDataPinsAsOutput() \
     __esos_lcd44780_hwxxx_configDataPinsAsOutput
 
-#define  __ESOS_LCD44780_HW_SET_E_HIGH          __ESOS_LCD44780_HWXXX_SET_E_HIGH       // E=1
-#define  __ESOS_LCD44780_HW_SET_E_LOW           __ESOS_LCD44780_HWXXX_SET_E_LOW        // E=0
-#define  __ESOS_LCD44780_HW_SET_RW_READ         __ESOS_LCD44780_HWXXX_SET_RW_READ      // RW=1
-#define  __ESOS_LCD44780_HW_SET_RW_WRITE        __ESOS_LCD44780_HWXXX_SET_RW_WRITE     // RW=0
-#define  __ESOS_LCD44780_HW_SET_RS_REGISTERS    __ESOS_LCD44780_HWXXX_SET_RS_REGISTERS // RS=0
-#define  __ESOS_LCD44780_HW_SET_RS_DATA         __ESOS_LCD44780_HWXXX_SET_RS_DATA      // RS=1
+#define  __ESOS_LCD44780_HW_SET_E_HIGH()          LCDE_SET()        // E=1
+#define  __ESOS_LCD44780_HW_SET_E_LOW()           LCDE_RESET()      // E=0
+#define  __ESOS_LCD44780_HW_SET_RW_READ()         LCDRW_SET()       // RW=1
+#define  __ESOS_LCD44780_HW_SET_RW_WRITE()        LCDRW_RESET()     // RW=0
+#define  __ESOS_LCD44780_HW_SET_RS_REGISTERS()    LCDRS_SET() 	    // RS=0
+#define  __ESOS_LCD44780_HW_SET_RS_DATA()         LCDRS_RESET()     // RS=1
 
-#define  __ESOS_LCD44780_HW_SET_D0              __ESOS_LCD44780_HWXXX_SET_D0
-#define  __ESOS_LCD44780_HW_CLEAR_D0            __ESOS_LCD44780_HWXXX_CLEAR_D0
-#define  __ESOS_LCD44780_HW_GET_D0              __ESOS_LCD44780_HWXXX_GET_D0
-#define  __ESOS_LCD44780_HW_SET_D1              __ESOS_LCD44780_HWXXX_SET_D1
-#define  __ESOS_LCD44780_HW_CLEAR_D1            __ESOS_LCD44780_HWXXX_CLEAR_D1
-#define  __ESOS_LCD44780_HW_GET_D1              __ESOS_LCD44780_HWXXX_GET_D1
-#define  __ESOS_LCD44780_HW_SET_D2              __ESOS_LCD44780_HWXXX_SET_D2
-#define  __ESOS_LCD44780_HW_CLEAR_D2            __ESOS_LCD44780_HWXXX_CLEAR_D2
-#define  __ESOS_LCD44780_HW_GET_D2              __ESOS_LCD44780_HWXXX_GET_D2
-#define  __ESOS_LCD44780_HW_SET_D3              __ESOS_LCD44780_HWXXX_SET_D3
-#define  __ESOS_LCD44780_HW_CLEAR_D3            __ESOS_LCD44780_HWXXX_CLEAR_D3
-#define  __ESOS_LCD44780_HW_GET_D3              __ESOS_LCD44780_HWXXX_GET_D3
-#define  __ESOS_LCD44780_HW_SET_D4              __ESOS_LCD44780_HWXXX_SET_D4
-#define  __ESOS_LCD44780_HW_CLEAR_D4            __ESOS_LCD44780_HWXXX_CLEAR_D4
-#define  __ESOS_LCD44780_HW_GET_D4              __ESOS_LCD44780_HWXXX_GET_D4
-#define  __ESOS_LCD44780_HW_SET_D5              __ESOS_LCD44780_HWXXX_SET_D5
-#define  __ESOS_LCD44780_HW_CLEAR_D5            __ESOS_LCD44780_HWXXX_CLEAR_D5
-#define  __ESOS_LCD44780_HW_GET_D5              __ESOS_LCD44780_HWXXX_GET_D5
-#define  __ESOS_LCD44780_HW_SET_D6              __ESOS_LCD44780_HWXXX_SET_D6
-#define  __ESOS_LCD44780_HW_CLEAR_D6            __ESOS_LCD44780_HWXXX_CLEAR_D6
-#define  __ESOS_LCD44780_HW_GET_D6              __ESOS_LCD44780_HWXXX_GET_D6
-#define  __ESOS_LCD44780_HW_SET_D7              __ESOS_LCD44780_HWXXX_SET_D7
-#define  __ESOS_LCD44780_HW_CLEAR_D7            __ESOS_LCD44780_HWXXX_CLEAR_D7
-#define  __ESOS_LCD44780_HW_GET_D7              __ESOS_LCD44780_HWXXX_GET_D7
+#define  __ESOS_LCD44780_HW_SET_D0()            LCDD0_SET()
+#define  __ESOS_LCD44780_HW_CLEAR_D0()          LCDD0_RESET()
+#define  __ESOS_LCD44780_HW_GET_D0()            IS_LCDD0_SET()
+#define  __ESOS_LCD44780_HW_SET_D1()            LCDD1_SET()
+#define  __ESOS_LCD44780_HW_CLEAR_D1()          LCDD1_RESET()
+#define  __ESOS_LCD44780_HW_GET_D1()            IS_LCDD1_SET()
+#define  __ESOS_LCD44780_HW_SET_D2()            LCDD2_SET()
+#define  __ESOS_LCD44780_HW_CLEAR_D2()          LCDD2_RESET()
+#define  __ESOS_LCD44780_HW_GET_D2()            IS_LCDD2_SET()
+#define  __ESOS_LCD44780_HW_SET_D3()            LCDD3_SET()
+#define  __ESOS_LCD44780_HW_CLEAR_D3()          LCDD3_RESET()
+#define  __ESOS_LCD44780_HW_GET_D3()            IS_LCDD3_SET()
+#define  __ESOS_LCD44780_HW_SET_D4()            LCDD4_SET()
+#define  __ESOS_LCD44780_HW_CLEAR_D4()          LCDD4_RESET()
+#define  __ESOS_LCD44780_HW_GET_D4()            IS_LCDD4_SET()
+#define  __ESOS_LCD44780_HW_SET_D5()            LCDD5_SET()
+#define  __ESOS_LCD44780_HW_CLEAR_D5()          LCDD5_RESET()
+#define  __ESOS_LCD44780_HW_GET_D5()            IS_LCDD5_SET()
+#define  __ESOS_LCD44780_HW_SET_D6()            LCDD6_SET()
+#define  __ESOS_LCD44780_HW_CLEAR_D6()          LCDD6_RESET()
+#define  __ESOS_LCD44780_HW_GET_D6()            IS_LCDD6_SET()
+#define  __ESOS_LCD44780_HW_SET_D7()            LCDD7_SET()
+#define  __ESOS_LCD44780_HW_CLEAR_D7()          LCDD7_RESET()
+#define  __ESOS_LCD44780_HW_GET_D7()            IS_LCDD7_SET()
 
 /* P R I V A T E   P R O T O T Y P E S *****************************************/
-void __esos_lcd44780_hwxxx_config ( void );
-void __esos_lcd44780_hwxxx_setDataPins( uint8_t u8_data);
-uint8_t __esos_lcd44780_hwxxx_getDataPins( void );
-void __esos_lcd44780_hwxxx_configDataPinsAsInput( void );
-void __esos_lcd44780_hwxxx_configDataPinsAsOutput( void );
+void __esos_lcd44780_pic24_config ( void );
+void __esos_lcd44780_pic24_setDataPins( uint8_t u8_data);
+uint8_t __esos_lcd44780_pic24_getDataPins( void );
+void __esos_lcd44780_pic24_configDataPinsAsInput( void );
+void __esos_lcd44780_pic24_configDataPinsAsOutput( void );
 
 #endif

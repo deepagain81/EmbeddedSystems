@@ -78,6 +78,8 @@
 #define LCDRW (RD11)
 #define LCDRS (RC12)
 #define LCD_BUSY (LCDD7) /*must be in read mode, with register select (RS) must be set to LOW to check busy flag*/
+
+//*******************************************************************//	
 	/*LCD PIN SET MACROS */
 #define LCDD0_SET() (LCDD0=1)
 #define LCDD0_RESET() (LCDD0=0)
@@ -95,6 +97,7 @@
 #define LCDD6_RESET() (LCDD6=0)
 #define LCDD7_SET() (LCDD7=1)
 #define LCDD7_RESET() (LCDD7=0)
+
 #define LCDE_SET() (LCDE=1)
 #define LCDE_RESET() (LCDE=0)
 #define LCDRW_SET() (LCDRW=1)
