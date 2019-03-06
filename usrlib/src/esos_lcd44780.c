@@ -181,12 +181,12 @@ void esos_lcd44780_init( void )
 {
 	// Set up the hardware aspects of the HWxxx interface of the LCD module service
 	//    direction, thresholds, etc
-	__esos_lcd44780_hw_configDataPinsAsOutput();
+	__esos_lcd44780_pic24_configDataPinsAsOutput();
 	__ESOS_LCD44780_HW_SET_RW_WRITE();
 	__ESOS_LCD44780_HW_SET_RS_REGISTERS();
 	
 	// give HW specific code a chance to do anything else to init/config
-	__esos_lcd44780_hw_config();
+	__esos_lcd44780_pic24_config();
 
 	// install our LCD housekeeping task into the scheduler
 	esos_RegisterTask( __esos_lcd44780_service );
@@ -389,11 +389,11 @@ ESOS_CHILD_TASK(__esos_lcd44780_read_u8, uint8_t *pu8_data, BOOL b_isData, BOOL 
     }
     
     __ESOS_LCD44780_HW_SET_RW_READ();
-	__esos_lcd44780_hw_configDataPinsAsInput();
+	__esos_lcd44780_pic24_configDataPinsAsInput();
 
 	__ESOS_LCD44780_HW_SET_E_HIGH();
 	ESOS_TASK_YIELD();
-	*pu8_data = __esos_lcd44780_hw_getDataPins();
+	*pu8_data = __esos_lcd44780_pic24_getDataPins();
 	__ESOS_LCD44780_HW_SET_E_LOW();
 	ESOS_TASK_YIELD();
 
@@ -418,9 +418,9 @@ ESOS_CHILD_TASK(__esos_lcd44780_write_u8, uint8_t u8_data, BOOL b_isData, BOOL b
     }
 	
     __ESOS_LCD44780_HW_SET_RW_WRITE();
-	__esos_lcd44780_hw_configDataPinsAsOutput();
+	__esos_lcd44780_pic24_configDataPinsAsOutput();
     
-    __esos_lcd44780_hw_setDataPins( u8_data );
+    __esos_lcd44780_pic24_setDataPins( u8_data );
 
 	__ESOS_LCD44780_HW_SET_E_HIGH();
 	ESOS_TASK_YIELD();
@@ -437,11 +437,11 @@ ESOS_CHILD_TASK( __esos_task_wait_lcd44780_while_busy  )
     ESOS_TASK_BEGIN();
     
 	while ( TRUE ) {
-		__esos_lcd44780_hw_configDataPinsAsInput();
+		__esos_lcd44780_pic24_configDataPinsAsInput();
 		__ESOS_LCD44780_HW_SET_RS_REGISTERS();
 		__ESOS_LCD44780_HW_SET_RW_READ();
 		__ESOS_LCD44780_HW_SET_E_HIGH();
-		b_hw_lcd_isBusy = (__esos_lcd44780_hw_getDataPins() & 0x80);
+		b_hw_lcd_isBusy = (__esos_lcd44780_pic24_getDataPins() & 0x80);
 		__ESOS_LCD44780_HW_SET_E_LOW();
         if ( b_hw_lcd_isBusy ){
             ESOS_TASK_YIELD();

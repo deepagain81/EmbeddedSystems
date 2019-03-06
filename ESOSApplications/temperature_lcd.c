@@ -14,10 +14,15 @@ void user_init(void) {
 // USER TASKS
 ESOS_USER_TASK(get_temperature) {
 	ESOS_TASK_BEGIN();
+	int i;
 	esos_lcd44780_init(); // initialize LCD
 	esos_lcd44780_configDisplay();
 	esos_uiF14_flashLED3(250); // flash the led with a period of 250ms
-	
+	esos_lcd44780_clearScreen();
+	esos_lcd44780_setCursorHome();
+	for(i = 0; i < 5; i++){
+		esos_lcd44780_writeChar( 0, i, 'A' );
+	}
 	while(true){
 		ESOS_TASK_YIELD();
 	}
