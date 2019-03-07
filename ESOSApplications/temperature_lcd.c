@@ -7,7 +7,7 @@
 static bool b_read_temp = false; // show potentiometer by default
 static uint16_t u16_potentiometer_reading; // in integer percentage
 static uint16_t u16_temperature_reading;   // in millivolts
-static int temperature; // calculated Celcius temperature
+static int32_t temperature; // calculated Celcius temperature
 static SW3_last_state = false;
 ESOS_USER_TASK(get_temperature);
 ESOS_USER_TASK(flash_screen);
@@ -206,7 +206,7 @@ ESOS_USER_TASK(flash_screen) {
 			esos_lcd44780_writeChar(0,4, ' ');
 			esos_lcd44780_writeChar(0,5, ' ');
 			esos_lcd44780_writeChar(0,6, ' ');
-			esos_lcd44780_writeChar(0,7, (temperature/1000 - 20 > 8) ? (temperature/1000 - 20) - 9 : ' ');
+			esos_lcd44780_writeChar(0,7, (temperature/1000 - 20 > 8) ? ((temperature/1000 - 20) - 9) : ' ');
 			// second row
 			esos_lcd44780_writeChar(1,0, (temperature/1000 /10 + '0')); // divide by 1000 to remove decimal digits from consideration
 			esos_lcd44780_writeChar(1,1, (temperature/1000 %10 + '0'));
