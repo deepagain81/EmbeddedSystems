@@ -42,7 +42,7 @@ void __esos_lcd44780_pic24_config ( void )
 {
     // Set up the hardware aspects of the pic24 interface of the LCD module service
     //    direction, thresholds, etc beyond what is already done in esos_lcd44780_config()
-
+	LCD_INITIAL_CONFIG();
 
 }
 
