@@ -57,8 +57,8 @@
 #define  __ESOS_LCD44780_HW_SET_E_LOW()           LCDE_RESET()      // E=0
 #define  __ESOS_LCD44780_HW_SET_RW_READ()         LCDRW_SET()       // RW=1
 #define  __ESOS_LCD44780_HW_SET_RW_WRITE()        LCDRW_RESET()     // RW=0
-#define  __ESOS_LCD44780_HW_SET_RS_REGISTERS()    LCDRS_SET() 	    // RS=0
-#define  __ESOS_LCD44780_HW_SET_RS_DATA()         LCDRS_RESET()     // RS=1
+#define  __ESOS_LCD44780_HW_SET_RS_REGISTERS()    LCDRS_RESET()     // RS=0
+#define  __ESOS_LCD44780_HW_SET_RS_DATA()         LCDRS_SET()     	// RS=1
 
 #define  __ESOS_LCD44780_HW_SET_D0()            LCDD0_SET()
 #define  __ESOS_LCD44780_HW_CLEAR_D0()          LCDD0_RESET()

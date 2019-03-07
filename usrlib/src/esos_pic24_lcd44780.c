@@ -49,21 +49,21 @@ void __esos_lcd44780_pic24_config ( void )
 void __esos_lcd44780_pic24_setDataPins( uint8_t u8_data) {
 	// write the hardware-specific code to take the u8_data passed in
 	// and place it on the appropriate data pins
-	if (u8_data & 0b00000001 != 0) { __ESOS_LCD44780_HW_SET_D0(); }
+	if ((u8_data & 0b00000001) != 0) { __ESOS_LCD44780_HW_SET_D0(); }
 	else { __ESOS_LCD44780_HW_CLEAR_D0(); }
-	if (u8_data & 0b00000010 != 0) { __ESOS_LCD44780_HW_SET_D1(); }
+	if ((u8_data & 0b00000010) != 0) { __ESOS_LCD44780_HW_SET_D1(); }
 	else { __ESOS_LCD44780_HW_CLEAR_D1(); }
-	if (u8_data & 0b00000100 != 0) { __ESOS_LCD44780_HW_SET_D2(); }
+	if ((u8_data & 0b00000100) != 0) { __ESOS_LCD44780_HW_SET_D2(); }
 	else { __ESOS_LCD44780_HW_CLEAR_D2(); }
-	if (u8_data & 0b00001000 != 0) { __ESOS_LCD44780_HW_SET_D3(); }
+	if ((u8_data & 0b00001000) != 0) { __ESOS_LCD44780_HW_SET_D3(); }
 	else { __ESOS_LCD44780_HW_CLEAR_D3(); }
-	if (u8_data & 0b00010000 != 0) { __ESOS_LCD44780_HW_SET_D4(); }
+	if ((u8_data & 0b00010000) != 0) { __ESOS_LCD44780_HW_SET_D4(); }
 	else { __ESOS_LCD44780_HW_CLEAR_D4(); }
-	if (u8_data & 0b00100000 != 0) { __ESOS_LCD44780_HW_SET_D5(); }
+	if ((u8_data & 0b00100000) != 0) { __ESOS_LCD44780_HW_SET_D5(); }
 	else { __ESOS_LCD44780_HW_CLEAR_D5(); }
-	if (u8_data & 0b01000000 != 0) { __ESOS_LCD44780_HW_SET_D6(); }
+	if ((u8_data & 0b01000000) != 0) { __ESOS_LCD44780_HW_SET_D6(); }
 	else { __ESOS_LCD44780_HW_CLEAR_D6(); }
-	if (u8_data & 0b10000000 != 0) { __ESOS_LCD44780_HW_SET_D7(); }
+	if ((u8_data & 0b10000000) != 0) { __ESOS_LCD44780_HW_SET_D7(); }
 	else { __ESOS_LCD44780_HW_CLEAR_D7(); }
 }
 
