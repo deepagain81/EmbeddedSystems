@@ -56,7 +56,9 @@ for sourceFile in Glob('ESOSApplications/*.c', True, True, True):
         'usrlib/src/esos_sensor.c',
         'usrlib/src/esos_pic24_sensor.c',
         'usrlib/src/esos_lcd44780.c',
-        'usrlib/src/esos_pic24_lcd44780.c'])
+        'usrlib/src/esos_pic24_lcd44780.c',
+        'userlib/src/esos_menu.c',
+        'userlib/src/fall17lib.c'])
     linker_side_effect(env, p)
     # Convert it to a .hex
     bin2hex(sourceFile, env, 'esos')
