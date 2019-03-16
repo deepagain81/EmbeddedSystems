@@ -174,7 +174,7 @@ ESOS_USER_TASK(esos_menu_task)
 				itoa(pst_entry->value, (char*)au8_intbuffer, 10);
 				esos_lcd44780_writeString(1, 0, (char*)au8_intbuffer);
 
-				_esos_uiF14_setRPGCounter(0);
+				_esos_uiF14_setRPGCounter(2047); // set counter to half of the max; formerly 0
 
 				while(TRUE) {
 					if(esos_uiF14_isSW3Pressed()) {
@@ -183,8 +183,8 @@ ESOS_USER_TASK(esos_menu_task)
 						__esos_menu_conf.e_menutype = NONE;
 						break;
 					}
-					else if(esos_uiF14_getRPGCounter_i16() <= -4) {
-						_esos_uiF14_setRPGCounter(esos_uiF14_getRPGCounter_i16() + 4);
+					else if(esos_uiF14_getRPGValue_u16() <= 2047-4) { // was i16, subtracted 2047 - was RPGCounter, now Value
+						_esos_uiF14_setRPGCounter(esos_uiF14_getRPGValue_u16() + 4); // did use i16 - was RPGCounter, now Value
 						if(esos_uiF14_isRPGTurningFast())
 							pst_entry->value -= 100;
 						else if(esos_uiF14_isRPGTurningMedium())
@@ -193,8 +193,8 @@ ESOS_USER_TASK(esos_menu_task)
 							pst_entry->value -= 1;
 						break;
 					}
-					else if(esos_uiF14_getRPGCounter_i16() >= 4) {
-						_esos_uiF14_setRPGCounter(esos_uiF14_getRPGCounter_i16() - 4);
+					else if(esos_uiF14_getRPGValue_u16() >= 2047+4) { // was i16, added 2047 - was RPGCounter, now Value
+						_esos_uiF14_setRPGCounter(esos_uiF14_getRPGValue_u16() - 4); // did use i16 - was RPGCounter, now Value
 						if(esos_uiF14_isRPGTurningFast())
 							pst_entry->value += 100;
 						else if(esos_uiF14_isRPGTurningMedium())
