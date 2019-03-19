@@ -37,9 +37,11 @@ uint32_t u32_LED1_Timer_Base;
 uint32_t u32_LED2_Timer_Base;
 uint32_t u32_LED3_Timer_Base;
 
-uint32_t u32_SW1_debounce_Timer_Base;	uint32_t u32_SW1_double_press_Timer_Base;
-uint32_t u32_SW2_debounce_Timer_Base;	uint32_t u32_SW2_double_press_Timer_Base;
-uint32_t u32_SW3_debounce_Timer_Base;	uint32_t u32_SW3_double_press_Timer_Base;
+uint32_t u32_SW1_debounce_Timer_Base;		uint32_t u32_SW1_double_press_Timer_Base;
+uint32_t u32_SW2_debounce_Timer_Base;		uint32_t u32_SW2_double_press_Timer_Base;
+uint32_t u32_SW3_debounce_Timer_Base;		uint32_t u32_SW3_double_press_Timer_Base;
+
+uint32_t u32_RPGA_debounce_Timer_Base = 0;	uint32_t u32_RPGB_debounce_Timer_Base = 0;
 
 // RPG variables
 int32_t i32_RPG_Last_Update_Timer_Base;
@@ -48,6 +50,8 @@ int32_t velocity_iterations;
 uint32_t u32_previous_calc_counter;
 float f_velocity;
 uint32_t u32_counter_difference;
+uint8_t seqA, seqB; // used to keep track of the last 4 states of A and B
+bool RPGA_debounced_value, RPGB_debounced_value;
 
 // GET and SET switch thresholds
 uint32_t get_RPG_SLOW() {
@@ -347,6 +351,7 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 		// INIT RPGA
 		_st_esos_uiF14Data.b_RPGAHigh = RPGA_IS_HIGH();		_st_esos_uiF14Data.u16_RPGCounter = 0;
 		_st_esos_uiF14Data.b_RPGBHigh = RPGB_IS_HIGH();		_st_esos_uiF14Data.u16_lastRPGCounter = 0;
+		seqA = 0;											seqB = 0;
 
 		// inititialize timers
 		u32_LED1_Timer_Base = 0;
@@ -357,6 +362,8 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 		u32_SW2_debounce_Timer_Base = 0;	u32_SW2_double_press_Timer_Base = 0;
 		u32_SW3_debounce_Timer_Base = 0;	u32_SW3_double_press_Timer_Base = 0;
 
+		u32_RPGA_debounce_Timer_Base = 0;	u32_RPGB_debounce_Timer_Base = 0;
+
 		i32_RPG_Last_Update_Timer_Base = 0;
 		i32_RPG_velocity = 0; // time in milliseconds since last tick
 		// initialize RPG
@@ -364,6 +371,8 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 		u32_previous_calc_counter = 0;
 		f_velocity = 0.0;
 		u32_counter_difference = 0;
+		RPGA_debounced_value = 0;
+		RPGB_debounced_value = 0;
 		/*previousRPGVelocity = 0;*/
 
 		// LED1 manager
@@ -508,39 +517,76 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 			//else { // RPG not moving
 
 			//}
-			// calculate RPG direction and velocity
-			if ((_st_esos_uiF14Data.b_RPGAHigh != RPGA_IS_HIGH()) || (_st_esos_uiF14Data.b_RPGBHigh != RPGB_IS_HIGH())) { // RPG has been moved!
-				if ((_st_esos_uiF14Data.b_RPGBHigh != RPGB_IS_HIGH())) { // B changes
-					if ( ( RPGA_IS_HIGH() && RPGB_IS_HIGH()    && _st_esos_uiF14Data.b_RPGBHigh) || 
-						 ( RPGA_IS_HIGH() && !(RPGB_IS_HIGH()) && _st_esos_uiF14Data.b_RPGBHigh) ||
-						 ( !(RPGA_IS_HIGH()) && RPGB_IS_HIGH() && !(_st_esos_uiF14Data.b_RPGBHigh)) ||
-						 ( !(RPGA_IS_HIGH()) && !(RPGB_IS_HIGH()) && !(_st_esos_uiF14Data.b_RPGBHigh))) {
-						// CCW
-						// reset last counter
-						_st_esos_uiF14Data.u16_lastRPGCounter = _st_esos_uiF14Data.u16_RPGCounter;
-						// counter--
-						_st_esos_uiF14Data.u16_RPGCounter--;
-					}
-					else if ((RPGA_IS_HIGH() && RPGB_IS_HIGH() && !(_st_esos_uiF14Data.b_RPGBHigh)) ||
-						(RPGA_IS_HIGH() && !(RPGB_IS_HIGH()) && !(_st_esos_uiF14Data.b_RPGBHigh)) ||
-						(!(RPGA_IS_HIGH()) && RPGB_IS_HIGH() && _st_esos_uiF14Data.b_RPGBHigh) ||
-						(!(RPGA_IS_HIGH()) && !(RPGB_IS_HIGH()) && _st_esos_uiF14Data.b_RPGBHigh)) {
-						// CW
-						// reset last counter
-						_st_esos_uiF14Data.u16_lastRPGCounter = _st_esos_uiF14Data.u16_RPGCounter;
-						// counter++
-						_st_esos_uiF14Data.u16_RPGCounter++;
-					}
+
+			// debounce u32_RPGA_debounce_Timer_Base = 0;	u32_RPGB_debounce_Timer_Base = 0;
+			// RPGA
+			if((_st_esos_uiF14Data.b_RPGAHigh != RPGA_IS_HIGH())){
+				// check timer RPGA
+				if((u32_RPGA_debounce_Timer_Base + 5) <= esos_GetSystemTick()){ // 5 is the debounce delay
+					// set debounced value
+					RPGA_debounced_value = RPGA_IS_HIGH();
 				}
-				
+			}
+			else{
+				// reset timer RPGA
+				u32_RPGA_debounce_Timer_Base = esos_GetSystemTick();
+			}
+			// RPGB
+			if((_st_esos_uiF14Data.b_RPGBHigh != RPGB_IS_HIGH())){
+				// check timer RPGA
+				if((u32_RPGB_debounce_Timer_Base + 5) <= esos_GetSystemTick()){
+					// set debounced value
+					RPGB_debounced_value = RPGB_IS_HIGH();
+				}
+			}
+			else{
+				// reset timer RPGA
+				u32_RPGB_debounce_Timer_Base = esos_GetSystemTick();
+			}
+
+			// calculate RPG direction and velocity
+			if ((_st_esos_uiF14Data.b_RPGAHigh != RPGA_debounced_value) || (_st_esos_uiF14Data.b_RPGBHigh != RPGB_debounced_value)) { // RPG has moved
+				// section derived from an example at https://www.allaboutcircuits.com/projects/how-to-use-a-rotary-encoder-in-a-mcu-based-project/
+				seqA <<= 1;		seqA |= (bool)RPGA_debounced_value;		seqA &= 0b00001111;
+				seqB <<= 1;		seqB |= (bool)RPGB_debounced_value;		seqB &= 0b00001111;
+
+				if(seqA == 0b00001001 && seqB == 0b00000011){ // CW sequence
+					_st_esos_uiF14Data.u16_RPGCounter++; // counter++
+				} else if(seqA == 0b00000011 && seqB == 0b00001001) { // CCW sequence
+					_st_esos_uiF14Data.u16_RPGCounter--; // counter--
+				}
+				// if ((_st_esos_uiF14Data.b_RPGBHigh != RPGB_IS_HIGH())) { // B changes
+				// 	if ( ( RPGA_IS_HIGH() && RPGB_IS_HIGH()    && _st_esos_uiF14Data.b_RPGBHigh) || 
+				// 		 ( RPGA_IS_HIGH() && !(RPGB_IS_HIGH()) && _st_esos_uiF14Data.b_RPGBHigh) ||
+				// 		 ( !(RPGA_IS_HIGH()) && RPGB_IS_HIGH() && !(_st_esos_uiF14Data.b_RPGBHigh)) ||
+				// 		 ( !(RPGA_IS_HIGH()) && !(RPGB_IS_HIGH()) && !(_st_esos_uiF14Data.b_RPGBHigh))) {
+				// 		// CCW
+				// 		// reset last counter
+				// 		_st_esos_uiF14Data.u16_lastRPGCounter = _st_esos_uiF14Data.u16_RPGCounter;
+				// 		// counter--
+				// 		_st_esos_uiF14Data.u16_RPGCounter--;
+				// 	}
+				// 	else if ((RPGA_IS_HIGH() && RPGB_IS_HIGH() && !(_st_esos_uiF14Data.b_RPGBHigh)) ||
+				// 		(RPGA_IS_HIGH() && !(RPGB_IS_HIGH()) && !(_st_esos_uiF14Data.b_RPGBHigh)) ||
+				// 		(!(RPGA_IS_HIGH()) && RPGB_IS_HIGH() && _st_esos_uiF14Data.b_RPGBHigh) ||
+				// 		(!(RPGA_IS_HIGH()) && !(RPGB_IS_HIGH()) && _st_esos_uiF14Data.b_RPGBHigh)) {
+				// 		// CW
+				// 		// reset last counter
+				// 		_st_esos_uiF14Data.u16_lastRPGCounter = _st_esos_uiF14Data.u16_RPGCounter;
+				// 		// counter++
+				// 		_st_esos_uiF14Data.u16_RPGCounter++;
+				// 	}
+				// }
+
+				_st_esos_uiF14Data.u16_lastRPGCounter = _st_esos_uiF14Data.u16_RPGCounter;
 				i32_RPG_Last_Update_Timer_Base = esos_GetSystemTick(); // RPG has updated
 			}
 			// calculate velocity
-			if (velocity_iterations >= 20) {
+			if (velocity_iterations >= 10) {
 				// calculate velocity
 				u32_counter_difference = ( esos_uiF14_getRPGValue_u16() > u32_previous_calc_counter ) ? (esos_uiF14_getRPGValue_u16() - u32_previous_calc_counter) : (u32_previous_calc_counter - esos_uiF14_getRPGValue_u16()) ;
 				//f_velocity = (float)(esos_uiF14_getRPGValue_u16() - u32_previous_calc_counter) / 0.200; // ticks per second - 24 in a rotation
-				f_velocity = (float)(u32_counter_difference) / 0.200; // ticks per second - 24 in a rotation
+				f_velocity = (u32_counter_difference); // ticks per second - 24 in a rotation
 
 				u32_previous_calc_counter = esos_uiF14_getRPGValue_u16();
 				velocity_iterations = 0;
@@ -558,10 +604,18 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 			//	u32_RPG_Velocity_Timer_Base = esos_GetSystemTick(); // restart timer
 			//}
 			// assign new values of RPG pins to variables
-			_st_esos_uiF14Data.b_RPGAHigh = (RPGA_IS_HIGH()) ? true : false;
-			_st_esos_uiF14Data.b_RPGBHigh = (RPGB_IS_HIGH()) ? true : false;
-
-			ESOS_TASK_WAIT_TICKS(__ESOS_UIF14_UI_PERIOD_MS); // call task every 10 ms
+			_st_esos_uiF14Data.b_RPGAHigh = (RPGA_debounced_value) ? true : false;
+			_st_esos_uiF14Data.b_RPGBHigh = (RPGB_debounced_value) ? true : false;
+			// ESOS_TASK_WAIT_ON_SEND_STRING("Counter: ");
+			// ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(_st_esos_uiF14Data.u16_RPGCounter);
+			// ESOS_TASK_WAIT_ON_SEND_STRING(" Velocity: ");
+			// ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(esos_uiF14_getRPGVelocity_i16());
+			// ESOS_TASK_WAIT_ON_SEND_STRING(" RPGA_IS_HIGH(): ");
+			// ESOS_TASK_WAIT_ON_SEND_UINT8((char)RPGA_IS_HIGH() + '0');
+			// ESOS_TASK_WAIT_ON_SEND_STRING(" debounced A(): ");
+			// ESOS_TASK_WAIT_ON_SEND_UINT8((char)RPGA_debounced_value + '0');
+			// ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+			ESOS_TASK_WAIT_TICKS(2); // call task every 10 ms __ESOS_UIF14_UI_PERIOD_MS
 		}
 	}
   ESOS_TASK_END();
