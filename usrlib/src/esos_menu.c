@@ -32,6 +32,19 @@ uint8_t au8_dnArrow[] = {
 	0b00000,
 };
 
+// added char
+uint8_t au8_leftArrow[] = {
+	0b00000,
+	0b00000,
+	0b00100,
+	0b01100,
+	0b11100,
+	0b01100,
+	0b00100,
+	0b00000,
+	0b00000,
+};
+
 ESOS_USER_TASK(esos_menu_task)
 {
 	ESOS_TASK_BEGIN();
@@ -58,6 +71,7 @@ ESOS_USER_TASK(esos_menu_task)
 
 			esos_lcd44780_setCustomChar(0, au8_upArrow);
 			esos_lcd44780_setCustomChar(1, au8_dnArrow);
+			esos_lcd44780_setCustomChar(2, au8_leftArrow); // for dual entry menu
 			esos_lcd44780_writeString(0, 0, pst_menu->ast_items[pst_menu->u8_choice].ac_line1);
 			esos_lcd44780_writeString(1, 0, pst_menu->ast_items[pst_menu->u8_choice].ac_line2);
 
