@@ -48,6 +48,8 @@ typedef struct {
 #define __ESOS_MS_TO_TICKS(x)           (x*1)
 #define __ESOS_UIF14_UI_PERIOD_MS       (10)
 #define __SWITCH_DEBOUNCING_INTERVAL	(50)
+#define __RPG_PINS_DEBOUNCING_INTERVAL  (5)
+#define __RPG_HISTORY_BUFFER_LEN        (100)
 
 
 // #define __RPG_VELOCITY_CALC_PERIOD      (100)
@@ -73,6 +75,7 @@ uint16_t esos_uiF14_getLastRPGCounter (void);
 void esos_ui_setLastRPGCounter (uint16_t);
 
 ESOS_USER_TASK (__esos_uiF14_task); // changed to __esos_uiF14_task in c file
+ESOS_USER_TASK (__esos_uiF14_RPG_tracking_task);
 
 // PUBLIC API FUNCTION PROTOTYPES
 
