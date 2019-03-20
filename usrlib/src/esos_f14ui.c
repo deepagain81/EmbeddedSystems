@@ -299,12 +299,12 @@ inline bool esos_uiF14_isRPGTurningFast( void ) {
 }
 
 inline bool esos_uiF14_isRPGTurningCW( void ) {
-		return ((_st_esos_uiF14Data.u16_RPGCounter > _st_esos_uiF14Data.u16_lastRPGCounter) && esos_uiF14_isRPGTurning());
+		return ((_st_esos_uiF14Data.u16_RPGCounter < _st_esos_uiF14Data.u16_lastRPGCounter) && esos_uiF14_isRPGTurning());
 }
 
 inline bool esos_uiF14_isRPGTurningCCW( void ) {
 	#warning not tested
-		return ((_st_esos_uiF14Data.u16_RPGCounter < _st_esos_uiF14Data.u16_lastRPGCounter)) && esos_uiF14_isRPGTurning();
+		return ((_st_esos_uiF14Data.u16_RPGCounter > _st_esos_uiF14Data.u16_lastRPGCounter)) && esos_uiF14_isRPGTurning();
 }
 
 int16_t esos_uiF14_getRPGVelocity_i16( void ) {
@@ -551,9 +551,9 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 				seqB <<= 1;		seqB |= (bool)RPGB_debounced_value;		seqB &= 0b00001111;
 
 				if(seqA == 0b00001001 && seqB == 0b00000011){ // CW sequence
-					_st_esos_uiF14Data.u16_RPGCounter++; // counter++
-				} else if(seqA == 0b00000011 && seqB == 0b00001001) { // CCW sequence
 					_st_esos_uiF14Data.u16_RPGCounter--; // counter--
+				} else if(seqA == 0b00000011 && seqB == 0b00001001) { // CCW sequence
+					_st_esos_uiF14Data.u16_RPGCounter++; // counter--
 				}
 				// if ((_st_esos_uiF14Data.b_RPGBHigh != RPGB_IS_HIGH())) { // B changes
 				// 	if ( ( RPGA_IS_HIGH() && RPGB_IS_HIGH()    && _st_esos_uiF14Data.b_RPGBHigh) || 
@@ -585,7 +585,7 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 			if (velocity_iterations >= 10) {
 				// calculate velocity
 				u32_counter_difference = ( esos_uiF14_getRPGValue_u16() > u32_previous_calc_counter ) ? (esos_uiF14_getRPGValue_u16() - u32_previous_calc_counter) : (u32_previous_calc_counter - esos_uiF14_getRPGValue_u16()) ;
-				//f_velocity = (float)(esos_uiF14_getRPGValue_u16() - u32_previous_calc_counter) / 0.200; // ticks per second - 24 in a rotation
+				f_velocity = (float)(esos_uiF14_getRPGValue_u16() - u32_previous_calc_counter) / 0.200; // ticks per second - 24 in a rotation
 				f_velocity = (u32_counter_difference); // ticks per second - 24 in a rotation
 
 				u32_previous_calc_counter = esos_uiF14_getRPGValue_u16();
@@ -615,7 +615,7 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 			// ESOS_TASK_WAIT_ON_SEND_STRING(" debounced A(): ");
 			// ESOS_TASK_WAIT_ON_SEND_UINT8((char)RPGA_debounced_value + '0');
 			// ESOS_TASK_WAIT_ON_SEND_STRING("\n");
-			ESOS_TASK_WAIT_TICKS(2); // call task every 10 ms __ESOS_UIF14_UI_PERIOD_MS
+			ESOS_TASK_WAIT_TICKS(__ESOS_UIF14_UI_PERIOD_MS); // call task every 10 ms __ESOS_UIF14_UI_PERIOD_MS
 		}
 	}
   ESOS_TASK_END();

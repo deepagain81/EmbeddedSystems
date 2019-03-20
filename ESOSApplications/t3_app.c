@@ -270,7 +270,9 @@ ESOS_USER_TASK(t3_demo_program) {
 				ESOS_TASK_WAIT_ON_SEND_STRING("CCW\n");
 			}
 			else {
-				ESOS_TASK_WAIT_ON_SEND_STRING("???\n");
+				ESOS_TASK_WAIT_ON_SEND_STRING("??? Counter:"); 
+				ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(esos_uiF14_getRPGValue_u16());
+				ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 			}
 		}
 		// set state of LED1
