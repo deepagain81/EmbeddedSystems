@@ -56,8 +56,8 @@ uint32_t u32_counter_difference;
 uint8_t seqA, seqB; // used to keep track of the last 4 states of A and B
 bool RPGA_debounced_value, RPGB_debounced_value;
 static int8_t RPG_HISTORY[__RPG_HISTORY_BUFFER_LEN];
-int RPG_HISTORY_INDEX; // points to the oldest value
-uint8_t RPG_DIRECTION;
+static int RPG_HISTORY_INDEX; // points to the oldest value
+int8_t RPG_DIRECTION;
 int i; // used in initilization for loop - RPG task
 
 // GET and SET switch thresholds
@@ -290,7 +290,7 @@ inline uint16_t esos_uiF14_getRPGValue_u16 ( void ) { //esos_uiF14_getRPGValue_u
 }
 
 inline bool esos_uiF14_isRPGTurning ( void ) {
-    return (esos_uiF14_getRPGVelocity_i16() != 0);
+    return i32_RPG_Last_Update_Timer_Base + 50 > esos_GetSystemTick(); // is turning stays on for 50 ms
 }
 
 inline bool esos_uiF14_isRPGTurningSlow( void ) {
@@ -306,12 +306,14 @@ inline bool esos_uiF14_isRPGTurningFast( void ) {
 }
 
 inline bool esos_uiF14_isRPGTurningCW( void ) {
-		return ((_st_esos_uiF14Data.u16_RPGCounter < _st_esos_uiF14Data.u16_lastRPGCounter) && esos_uiF14_isRPGTurning());
+		//return ((_st_esos_uiF14Data.u16_RPGCounter < _st_esos_uiF14Data.u16_lastRPGCounter) && esos_uiF14_isRPGTurning());
+	return RPG_DIRECTION == 1;
 }
 
 inline bool esos_uiF14_isRPGTurningCCW( void ) {
 	#warning not tested
-		return ((_st_esos_uiF14Data.u16_RPGCounter > _st_esos_uiF14Data.u16_lastRPGCounter)) && esos_uiF14_isRPGTurning();
+		//return ((_st_esos_uiF14Data.u16_RPGCounter > _st_esos_uiF14Data.u16_lastRPGCounter)) && esos_uiF14_isRPGTurning();
+	return RPG_DIRECTION == -1;
 }
 
 int16_t esos_uiF14_getRPGVelocity_i16( void ) {
@@ -521,9 +523,9 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 			// ESOS_TASK_WAIT_ON_SEND_UINT8((char)RPGA_IS_HIGH() + '0');
 			// ESOS_TASK_WAIT_ON_SEND_STRING(" debounced A(): ");
 			// ESOS_TASK_WAIT_ON_SEND_UINT8((char)RPGA_debounced_value + '0');
-			ESOS_TASK_WAIT_ON_SEND_STRING(" Velocity: ");
-			ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(i32_RPG_velocity);
-			ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+			//ESOS_TASK_WAIT_ON_SEND_STRING(" Velocity: ");
+			//ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(i32_RPG_velocity);
+			//ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 			ESOS_TASK_WAIT_TICKS(__ESOS_UIF14_UI_PERIOD_MS); // call task every 10 ms __ESOS_UIF14_UI_PERIOD_MS
 		}
 	}
@@ -555,7 +557,7 @@ ESOS_USER_TASK( __esos_uiF14_RPG_tracking_task ){
 		for(i = 0; i < __RPG_HISTORY_BUFFER_LEN; i++){
 			RPG_HISTORY[i] = false;
 		}
-		RPG_HISTORY_INDEX = __RPG_HISTORY_BUFFER_LEN;
+		RPG_HISTORY_INDEX = 0;
 		while (true){
 			// u32_RPGA_debounce_Timer_Base = 0;	u32_RPGB_debounce_Timer_Base = 0;
 			
