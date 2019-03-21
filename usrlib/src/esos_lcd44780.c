@@ -267,9 +267,9 @@ void esos_lcd44780_writeString( uint8_t u8_row, uint8_t u8_column, char *psz_dat
 	int i = 0;
 	while (psz_data[i] !='\0')
 		{
-			// esos_lcd44780_vars.aac_lcdBuffer[u8_row][((u8_column+i)%ESOS_LCD44780_MEM_WIDTH)] = psz_data[i];
-			// esos_lcd44780_vars.ab_lcdBufferNeedsUpdate[u8_row][((u8_column+i)%ESOS_LCD44780_MEM_WIDTH)] = TRUE;
-			esos_lcd44780_writeChar( u8_row, ((u8_column+i)%ESOS_LCD44780_MEM_WIDTH), psz_data[i] );
+			esos_lcd44780_vars.aac_lcdBuffer[u8_row][((u8_column+i)%ESOS_LCD44780_MEM_WIDTH)] = psz_data[i];
+			esos_lcd44780_vars.ab_lcdBufferNeedsUpdate[u8_row][((u8_column+i)%ESOS_LCD44780_MEM_WIDTH)] = TRUE;
+			//esos_lcd44780_writeChar( u8_row, ((u8_column+i)%ESOS_LCD44780_MEM_WIDTH), psz_data[i] );
 			i++;
 			// if(i > 100){
 			// 	ESOS_TASK_WAIT_ON_SEND_STRING("esos_lcd44780_writeString() data is abnormally long...\n");
