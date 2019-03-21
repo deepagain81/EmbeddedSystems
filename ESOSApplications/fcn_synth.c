@@ -8,12 +8,13 @@
 #include "fall17lib.h"
 #include "esos_menu.h"
 #include "esos_lcd44780.h"
+#include "DAC_comms.h"
 
 // Array for waveforms
 #include "stdio.h"
 
-void configDAC(void);
-void writeDAC(uint16_t u16_x, uint16_t u16_y);
+// void configDAC(void);
+// void writeDAC(uint16_t u16_x, uint16_t u16_y);
 
 volatile uint8_t u8_per, u8_amp;	// variables
 volatile uint16_t u16_per;
@@ -98,6 +99,9 @@ ESOS_USER_TIMER( heartbeat_LED ) {
 // LCD 
 ESOS_USER_TASK( fcn_synth ) {
 	ESOS_TASK_BEGIN();
+	//setDACA(0x3FF);
+	shutdownDACA();
+	shutdownDACB();
 	while(TRUE){
 
 		// Display main menu until sw3 pressed
@@ -162,7 +166,6 @@ ESOS_USER_TASK( fcn_synth ) {
 			setLEDS();
 		else if (my_menu.u8_choice == 7){
 		}
-		
 	}// end while
 	ESOS_TASK_END();
 }// end user task

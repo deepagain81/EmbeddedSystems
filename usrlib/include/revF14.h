@@ -61,9 +61,55 @@
 #define VPOT (_RB2)
 #define CONFIG_VPOT() CONFIG_RB2_AS_ANALOG()
     // use in esos_pic24_sensor
-// Temperature sensor
+// Temperature sensor - IC1, non I2C
 #define VTEMP (_RB3)
 #define CONFIG_VTEMP() CONFIG_RB3_AS_ANALOG()
+// DAC pins
+#define DAC_SDO (_RD4)
+#define DAC_SCK (_RD5)
+#define DAC_CS  (_RF1) /*We manually wired this pin to the breakout section of board*/
+#define CONFIG_DAC_SDO() CONFIG_RD4_AS_DIG_OUTPUT()
+#define CONFIG_DAC_SCK() CONFIG_RD5_AS_DIG_OUTPUT()
+#define CONFIG_DAC_CS()  CONFIG_RF1_AS_DIG_OUTPUT()
+#define CONFIG_DAC() {\
+CONFIG_DAC_SDO();\
+CONFIG_DAC_SCK();\
+CONFIG_DAC_CS();\
+DAC_SET_CS_HIGH();\
+}
+#define DAC_SET_SDO_LOW()    (_LATD4 = 0)
+#define DAC_SET_SDO_HIGH()   (_LATD4 = 1)
+#define DAC_SET_SCK_LOW()    (_LATD5 = 0)
+#define DAC_SET_SCK_HIGH()   (_LATD5 = 1)
+#define DAC_SET_CS_LOW()     (_LATF1 = 0)
+#define DAC_SET_CS_HIGH()    (_LATF1 = 1)
+
+// I2C pins
+#define I2C_SCL (_RG2)
+#define I2C_SDA (_RG3)
+#define CONFIG_I2C_SCL()   {\
+CONFIG_RG2_AS_DIG_OUTPUT();\
+ENABLE_RG2_OPENDRAIN();\
+}
+#define CONFIG_I2C_WRITE() {\
+CONFIG_RG3_AS_DIG_OUTPUT();\
+ENABLE_RG3_OPENDRAIN();\
+}
+#define CONFIG_I2C_READ() {\
+CONFIG_RG3_AS_DIG_INPUT();\
+DISABLE_RG3_OPENDRAIN();\
+}
+#define CONFIG_I2C()       {\
+CONFIG_I2C_SCL();\
+CONFIG_I2C_WRITE();\
+}
+#define I2C_SET_CLOCK_LOW()  (_LATG2 = 0 )
+#define I2C_SET_CLOCK_HIGH() (_LATG2 = 1 )
+#define I2C_TOGGLE_CLOCK()   (_LATG2 = !_LATG2 )
+#define I2C_WRITE_LOW()      (_LATG3 = 0 ) /*Even for opendrain, 0 should drive the bus low, right?*/
+#define I2C_WRITE_HIGH()     (_LATG3 = 1 )
+#define IS_I2C_DATA_SET()    (_RG3  == 1 )
+
 // LCD pins
 #define LCDD0 (_RE0)
 #define LCDD1 (_RE1)
@@ -173,6 +219,8 @@ CONFIG_RPGA();\
 CONFIG_RPGB();\
 CONFIG_VPOT();\
 CONFIG_VTEMP();\
+CONFIG_DAC();\
+CONFIG_I2C();\
 LCD_INITIAL_CONFIG();\
 /*LED Default State*/\
 LED1_OFF();\
