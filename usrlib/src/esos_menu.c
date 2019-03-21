@@ -17,7 +17,7 @@ uint8_t au8_upArrow[] = {
 	0b11111,
 	0b00000,
 	0b00000,
-	0b00000,
+	//0b00000,
 };
 
 uint8_t au8_dnArrow[] = {
@@ -29,7 +29,7 @@ uint8_t au8_dnArrow[] = {
 	0b00100,
 	0b00000,
 	0b00000,
-	0b00000,
+	//0b00000,
 };
 
 // added char
@@ -42,7 +42,7 @@ uint8_t au8_leftArrow[] = {
 	0b01100,
 	0b00100,
 	0b00000,
-	0b00000,
+	//0b00000,
 };
 
 ESOS_USER_TASK(esos_menu_task)
@@ -71,7 +71,7 @@ ESOS_USER_TASK(esos_menu_task)
 
 			esos_lcd44780_setCustomChar(0, au8_upArrow);
 			esos_lcd44780_setCustomChar(1, au8_dnArrow);
-			esos_lcd44780_setCustomChar(2, au8_leftArrow); // for dual entry menu
+			//esos_lcd44780_setCustomChar(2, au8_leftArrow); // for dual entry menu
 			esos_lcd44780_writeString(0, 0, pst_menu->ast_items[pst_menu->u8_choice].ac_line1);
 			esos_lcd44780_writeString(1, 0, pst_menu->ast_items[pst_menu->u8_choice].ac_line2);
 
@@ -162,6 +162,8 @@ ESOS_USER_TASK(esos_menu_task)
 			// Draw the display.
 			esos_lcd44780_clearScreen();
 
+			esos_lcd44780_setCustomChar(2, au8_leftArrow); // for dual entry menu
+
 			u8_idlen1 = strlen(pst_menu->entries[0].label);
 			u8_idlen2 = strlen(pst_menu->entries[1].label);
 
@@ -197,7 +199,7 @@ ESOS_USER_TASK(esos_menu_task)
 						__esos_menu_conf.e_menutype = NONE;
 						break;
 					}
-					else if(esos_uiF14_getRPGValue_u16() <= 2047-4) { // was i16, subtracted 2047 - was RPGCounter, now Value
+					else if(esos_uiF14_getRPGValue_u16() <= 2047-1) { // was i16, subtracted 2047 - was RPGCounter, now Value
 						_esos_uiF14_setRPGCounter(esos_uiF14_getRPGValue_u16() + 4); // did use i16 - was RPGCounter, now Value
 						if(esos_uiF14_isRPGTurningFast())
 							pst_entry->value -= 100;
@@ -207,7 +209,7 @@ ESOS_USER_TASK(esos_menu_task)
 							pst_entry->value -= 1;
 						break;
 					}
-					else if(esos_uiF14_getRPGValue_u16() >= 2047+4) { // was i16, added 2047 - was RPGCounter, now Value
+					else if(esos_uiF14_getRPGValue_u16() >= 2047+1) { // was i16, added 2047 - was RPGCounter, now Value
 						_esos_uiF14_setRPGCounter(esos_uiF14_getRPGValue_u16() - 4); // did use i16 - was RPGCounter, now Value
 						if(esos_uiF14_isRPGTurningFast())
 							pst_entry->value += 100;
