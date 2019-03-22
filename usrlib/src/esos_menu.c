@@ -111,6 +111,7 @@ ESOS_USER_TASK(esos_menu_task)
 			static BOOL b_firstLine;
 			static BOOL b_lastLine;
 			static esos_menu_staticmenu_t *pst_menu;
+			static BOOL b_dual_entry_selection;
 
 			// Draw the menu, then wait for a button
 			pst_menu = __esos_menu_conf.pv_data;
@@ -155,13 +156,12 @@ ESOS_USER_TASK(esos_menu_task)
 			static esos_menu_entry_t *pst_menu;
 			static uint8_t au8_intbuffer[7];
 			static uint8_t u8_idlen1, u8_idlen2;
-			static esos_menu_entry_item_t *pst_entry;
+			static esos_menu_entry_item_t *pst_entry, *pst_entry2;
 
 			pst_menu = __esos_menu_conf.pv_data;
 
 			// Draw the display.
 			esos_lcd44780_clearScreen();
-
 			esos_lcd44780_setCustomChar(2, au8_leftArrow); // for dual entry menu
 
 			u8_idlen1 = strlen(pst_menu->entries[0].label);
@@ -169,6 +169,39 @@ ESOS_USER_TASK(esos_menu_task)
 
 			// TODO. We only handle one value right now.
 			if(u8_idlen2 > 0 && FALSE) {
+				/*pst_entry = &pst_menu->entries[0];
+				pst_entry2 = &pst_menu->entries[1];
+
+				// menu for 2 choices
+				esos_lcd44780_writeString(0, 0, pst_entry->label);
+				esos_lcd44780_writeString(1, 0, pst_entry2->label);
+				
+				while(){
+					// Draw the arrows.
+					if(b_dual_entry_selection == 0)
+						esos_lcd44780_writeChar(0, 7, '\x02');
+					if(b_dual_entry_selection == 1)
+						esos_lcd44780_writeChar(1, 7, '\x02');
+				}
+
+
+
+				if(pst_entry->min != 0 || pst_entry->max != 0) {
+					// Clamp the value.
+					pst_entry->value = MIN(pst_entry->value, pst_entry->max);
+					pst_entry->value = MAX(pst_entry->value, pst_entry->min);
+				}
+
+				if(pst_entry2->min != 0 || pst_entry2->max != 0) {
+					// Clamp the value.
+					pst_entry2->value = MIN(pst_entry2->value, pst_entry2->max);
+					pst_entry2->value = MAX(pst_entry2->value, pst_entry2->min);
+				}*/
+
+
+
+
+
 				/* esos_lcd_writeString(0, 0, pst_menu->label1); */
 				/* itoa(pst_menu->value1, (char*)au8_intbuffer, 10); */
 				/* esos_lcd_writeString(0, u8_idlen1, (char*)au8_intbuffer); */

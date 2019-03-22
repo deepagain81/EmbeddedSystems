@@ -1,5 +1,5 @@
 // Author : Deepak Chapagain
-// Date   : 03/19.2019
+// Date   : 03/19/2019
 // ESOS user application that allow user to enter desired parameter 
 // to control the analog function synthesizr output from the DAC.
 
@@ -61,8 +61,6 @@ void configTimer2(void){
 	T2CONbits.TON = 1;		// turn on the timer
 }//end timer config
 
-
-
 /*TODO: Ctrl+F replace all instances of mm with a name that abides
 		by the coding standards.
 */
@@ -89,20 +87,24 @@ static esos_menu_longmenu_t my_menu = {
 	},
 };
 
-
-// menu for selecting waveform type
-static esos_menu_longmenu_t menu_setWvform = {
-	.u8_numitems = 6,
+static esos_menu_longmenu_t my_menu_no_duty_cycle = {
+	.u8_numitems = 7,
 	.u8_choice = 0, //Default
 	.ast_items = {
-		{ "tri",
+		{ "Set",
 		"wvform"},
-		{ "sine",
-		"wvform"},
-		{ "square",
-		"wvform"},
-		{ "user1",
-		"wvform"},
+		{ "Set",
+		"freq"},
+		{ "Set",
+		"ampltd"},
+		//{ "Set",
+		//"duty"},
+		{ "Read",
+		"LM60"},
+		{ "Read",
+		"1631"},
+		{ "Set",
+		"LEDs"},
 		{ "",
 		"Back..."},
 	},
@@ -115,12 +117,20 @@ static esos_menu_staticmenu_t err = {
 	.lines = {{"404"}, {"NotFnd"}},
 };
 
-// Gives option to select from
-static esos_menu_entry_t ledfp = {
-	.entries[0].label = "Per = ",
-	.entries[0].value = 1000, //Default, per = 1s
-	.entries[0].min = 250,
-	.entries[0].max = 2000,
+// menu for selecting waveform type
+static esos_menu_longmenu_t menu_setWvform = {
+	.u8_numitems = 4,
+	.u8_choice = 0, //Default
+	.ast_items = {
+		{ "tri",
+		"wvform"},
+		{ "sine",
+		"wvform"},
+		{ "square",
+		"wvform"},
+		{ "user1",
+		"wvform"},
+	},
 };
 
 // Selecting frequency
@@ -133,18 +143,30 @@ static esos_menu_entry_t freq = {
 
 // Selecting amplitude
 static esos_menu_entry_t ampltd = {
-	.entries[0].label = "ampltd=",
-	.entries[0].value = 1, //Default
+	.entries[0].label = "amp(dV)=",
+	.entries[0].value = 0, //Default - unit is deciVolts
 	.entries[0].min = 0,
-	.entries[0].max = 3.3,
+	.entries[0].max = 33, // make this deciVolts
 };
 
-// Selecting duty cycle
+// Selecting duty cycle - should only appear when squarewave 
 static esos_menu_entry_t duty = {
 	.entries[0].label = "duty= ",
 	.entries[0].value = 50, //Default
 	.entries[0].min = 0,
 	.entries[0].max = 100,
+};
+
+static esos_menu_staticmenu_t read_LM60 = {
+	.u8_numlines = 2,
+	.u8_currentline = 0,
+	.lines = {{"404"}, {"NotFnd"}},
+};
+
+static esos_menu_staticmenu_t read_1631 = {
+	.u8_numlines = 2,
+	.u8_currentline = 0,
+	.lines = {{"404"}, {"NotFnd"}},
 };
 
 // Selecting LEDS
@@ -155,6 +177,13 @@ static esos_menu_entry_t LEDs = {
 	.entries[0].max = 7,
 };
 
+/*// Gives option to select from
+static esos_menu_entry_t ledfp = {
+	.entries[0].label = "Per = ",
+	.entries[0].value = 1000, //Default, per = 1s
+	.entries[0].min = 250,
+	.entries[0].max = 2000,
+};*/
 
 // heartbeat
 ESOS_USER_TIMER( heartbeat_LED ) {

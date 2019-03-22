@@ -99,16 +99,20 @@ ENABLE_RG3_OPENDRAIN();\
 CONFIG_RG3_AS_DIG_INPUT();\
 DISABLE_RG3_OPENDRAIN();\
 }
-#define CONFIG_I2C()       {\
-CONFIG_I2C_SCL();\
-CONFIG_I2C_WRITE();\
-}
 #define I2C_SET_CLOCK_LOW()  (_LATG2 = 0 )
 #define I2C_SET_CLOCK_HIGH() (_LATG2 = 1 )
 #define I2C_TOGGLE_CLOCK()   (_LATG2 = !_LATG2 )
 #define I2C_WRITE_LOW()      (_LATG3 = 0 ) /*Even for opendrain, 0 should drive the bus low, right?*/
 #define I2C_WRITE_HIGH()     (_LATG3 = 1 )
 #define IS_I2C_DATA_SET()    (_RG3  == 1 )
+
+#define CONFIG_I2C()       {\
+CONFIG_I2C_SCL();\
+CONFIG_I2C_WRITE();\
+/*Initilize state*/\
+I2C_SET_CLOCK_HIGH();\
+I2C_WRITE_HIGH();\
+}
 
 // LCD pins
 #define LCDD0 (_RE0)
