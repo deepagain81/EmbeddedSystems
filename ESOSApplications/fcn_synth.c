@@ -265,14 +265,14 @@ ESOS_USER_TASK( fcn_synth ) {
 	ESOS_TASK_END();
 }// end user task
 
-ESOS_USER_TASK(flash_led) {
-	ESOS_TASK_BEGIN();
-	while(TRUE){
-		ESOS_TASK_WAIT_TICKS(ledfp.entries[0].value);
-		LED1 = !LED1;
-	}
-	ESOS_TASK_END();
-}
+// ESOS_USER_TASK(flash_led) {
+// 	ESOS_TASK_BEGIN();
+// 	while(TRUE){
+// 		ESOS_TASK_WAIT_TICKS(ledfp.entries[0].value);
+// 		LED1 = !LED1;
+// 	}
+// 	ESOS_TASK_END();
+// }
 
 
 
@@ -282,7 +282,7 @@ void user_init(){
 	//config_esos_uiF14();
 	esos_menu_init();
 	esos_RegisterTask(fcn_synth);
-	esos_RegisterTask(flash_led);
+	//esos_RegisterTask(flash_led);
 	esos_RegisterTimer(heartbeat_LED, 500);
 
 	//esos_RegisterTask(get_temperature);

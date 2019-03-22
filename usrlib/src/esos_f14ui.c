@@ -289,6 +289,10 @@ inline uint16_t esos_uiF14_getRPGValue_u16 ( void ) { //esos_uiF14_getRPGValue_u
     return _st_esos_uiF14Data.u16_RPGCounter;
 }
 
+inline uint16_t esos_uiF14_getLastRPGCounter (void){
+	return _st_esos_uiF14Data.u16_lastRPGCounter;
+}
+
 inline bool esos_uiF14_isRPGTurning ( void ) {
     return i32_RPG_Last_Update_Timer_Base + 50 > esos_GetSystemTick(); // is turning stays on for 50 ms
 }
@@ -306,14 +310,18 @@ inline bool esos_uiF14_isRPGTurningFast( void ) {
 }
 
 inline bool esos_uiF14_isRPGTurningCW( void ) {
-		//return ((_st_esos_uiF14Data.u16_RPGCounter < _st_esos_uiF14Data.u16_lastRPGCounter) && esos_uiF14_isRPGTurning());
-	return RPG_DIRECTION == 1;
+	if (esos_uiF14_isRPGTurning()){
+		return (esos_uiF14_getRPGValue_u16 > esos_uiF14_getLastRPGCounter);
+	}
+	//return RPG_DIRECTION == 1;
 }
 
 inline bool esos_uiF14_isRPGTurningCCW( void ) {
 	#warning not tested
-		//return ((_st_esos_uiF14Data.u16_RPGCounter > _st_esos_uiF14Data.u16_lastRPGCounter)) && esos_uiF14_isRPGTurning();
-	return RPG_DIRECTION == -1;
+	if (esos_uiF14_isRPGTurning()){
+		return (esos_uiF14_getRPGValue_u16 < esos_uiF14_getLastRPGCounter);
+	}
+	// return -1;
 }
 
 int16_t esos_uiF14_getRPGVelocity_i16( void ) {
