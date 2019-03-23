@@ -6,9 +6,11 @@
 
 #include "revF14.h"
 #include "fall17lib.h"
+#include "esos_f14ui.h"
 #include "esos_menu.h"
 #include "esos_lcd44780.h"
 #include "DAC_comms.h"
+#include "esos_sensor.h"
 
 // Array for waveforms
 #include "stdio.h"
@@ -23,11 +25,21 @@ const uint8_t au8_sinetbl[] = {127,133,139,146,152,158,164,170,176,181,187,192,1
 const uint8_t au8_sqrtbl[] = {254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 const uint8_t au8_tritbl[] = {0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100,104,108,112,116,120,124,128,132,136,140,144,148,152,156,160,164,168,172,176,180,184,188,192,196,200,204,208,212,216,220,224,228,232,236,240,244,248,252,254,252,248,244,240,236,232,228,224,220,216,212,208,204,200,196,192,188,184,180,176,172,168,164,160,156,152,148,144,140,136,132,128,124,120,116,112,108,104,100,96,92,88,84,80,76,72,68,64,60,56,52,48,44,40,36,32,28,24,20,16,12,8,4,0};
 const uint8_t au8_usr1tbl[] = {64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+uint16_t u16_sensor_millivolts;
 // Config pin for output (here is where DAC comes into play)
 // #define WAVEOUT(_LATB2)
 // void config_waveout(){
 // 	CONFIG_RB2_AS_DIG_OUTPUT();
 // }
+
+// esos_RegisterTask(read_LM60_task); // not completed yet
+// 	esos_RegisterTask(read_1631_task); // not completed yet
+// 	esos_RegisterTask(set_LEDs_task);
+
+ESOS_USER_TASK( read_LM60_task );
+ESOS_USER_TASK( read_1631_task );
+ESOS_USER_TASK( set_LEDs_task );
 
 //Interrupt service ( DAC comes here, i guess)
 void _ISR_T2Interrupt(void){
@@ -157,16 +169,23 @@ static esos_menu_entry_t duty = {
 	.entries[0].max = 100,
 };
 
-static esos_menu_staticmenu_t read_LM60 = {
-	.u8_numlines = 2,
-	.u8_currentline = 0,
-	.lines = {{"404"}, {"NotFnd"}},
+// typedef struct {
+// 	char label[8];
+// 	int32_t dynamic_data;
+// 	uint8_t format;
+// 	bool editable;
+// } esos_menu_datadisplaymenu_t;
+
+static esos_menu_datadisplaymenu_t read_LM60 = {
+	.label = "LM60(C)",
+	.dynamic_data = -1,
+	.format = 0,
 };
 
-static esos_menu_staticmenu_t read_1631 = {
-	.u8_numlines = 2,
-	.u8_currentline = 0,
-	.lines = {{"404"}, {"NotFnd"}},
+static esos_menu_datadisplaymenu_t read_1631 = {
+	.label = "1631(C)",
+	.dynamic_data = -1,
+	.format = 0,
 };
 
 // Selecting LEDS
@@ -186,9 +205,9 @@ static esos_menu_entry_t ledfp = {
 };*/
 
 // heartbeat
-ESOS_USER_TIMER( heartbeat_LED ) {
-	esos_uiF14_toggleLED3();
-}
+// ESOS_USER_TIMER( heartbeat_LED ) {
+// 	esos_uiF14_toggleLED3();
+// }
 
 // LCD 
 ESOS_USER_TASK( fcn_synth ) {
@@ -249,16 +268,22 @@ ESOS_USER_TASK( fcn_synth ) {
 		}//end if else choice==8
 		else if (my_menu.u8_choice == 1)
 			ESOS_TASK_WAIT_ESOS_MENU_ENTRY(freq);
-		// else if (my_menu.u8_choice == 2)
-		// 	ESOS_TASK_WAIT_ESOS_MENU_ENTRY(ampltd);
-		// else if (my_menu.u8_choice == 3)
-		// 	ESOS_TASK_WAIT_ESOS_MENU_ENTRY(duty);
-		else if (my_menu.u8_choice == 4)
-			readLM60();
-		else if (my_menu.u8_choice == 5)
-			read1631();
-		else if (my_menu.u8_choice == 6)
-			setLEDS();
+		else if (my_menu.u8_choice == 2)
+		 	ESOS_TASK_WAIT_ESOS_MENU_ENTRY(ampltd);
+		else if (my_menu.u8_choice == 3)
+		 	ESOS_TASK_WAIT_ESOS_MENU_ENTRY(duty); // should only appear when square wave is selected
+		else if (my_menu.u8_choice == 4){
+			//readLM60();
+			ESOS_TASK_WAIT_ESOS_MENU_DATADISPLAYMENU(read_LM60);
+		}
+		else if (my_menu.u8_choice == 5){
+			//read1631();
+			ESOS_TASK_WAIT_ESOS_MENU_DATADISPLAYMENU(read_1631);
+		}
+		else if (my_menu.u8_choice == 6){
+			//setLEDS();
+			ESOS_TASK_WAIT_ESOS_MENU_ENTRY(LEDs);
+		}
 		else if (my_menu.u8_choice == 7){
 		}
 	}// end while
@@ -274,28 +299,16 @@ ESOS_USER_TASK( fcn_synth ) {
 // 	ESOS_TASK_END();
 // }
 
-
-
-
 void user_init(){
-	
-	//config_esos_uiF14();
+	config_esos_uiF14();
 	esos_menu_init();
 	esos_RegisterTask(fcn_synth);
+	esos_RegisterTask(read_LM60_task); // not completed yet
+	esos_RegisterTask(read_1631_task); // not completed yet
+	esos_RegisterTask(set_LEDs_task);
 	//esos_RegisterTask(flash_led);
-	esos_RegisterTimer(heartbeat_LED, 500);
-
+	//esos_RegisterTimer(heartbeat_LED, 500);
 	//esos_RegisterTask(get_temperature);
-}
-
-void readLM60(){
-	// read temp from LM60. We did it on last lab (t5)
-	return;
-}
-
-void read1631(){
-	// read temp
-	return;
 }
 
 void setLEDS(){
@@ -313,3 +326,61 @@ void setLEDS(){
 
 // 				ESOS_TASK_WAIT_TICKS(500);
 // 				}
+
+ESOS_USER_TASK( read_LM60_task ) {
+	ESOS_TASK_BEGIN();
+	while(true){
+		if(my_menu.u8_choice != 4){
+			// do nothing
+		} else {
+			// read the sensor
+			ESOS_TASK_WAIT_ON_AVAILABLE_SENSOR(ESOS_SENSOR_CH03, ESOS_SENSOR_VREF_3V3);
+			ESOS_TASK_WAIT_SENSOR_READ(u16_sensor_millivolts, ESOS_SENSOR_AVG32, ESOS_SENSOR_FORMAT_VOLTAGE);
+			ESOS_SENSOR_CLOSE();
+			// convert to temperature
+			read_LM60.dynamic_data = 100000 * ((int32_t)u16_sensor_millivolts - 424) / 625; // removed 2 decimal places
+		}
+		ESOS_TASK_WAIT_TICKS(10);
+	}
+	ESOS_TASK_END();
+}
+
+ESOS_USER_TASK( read_1631_task ) {
+	ESOS_TASK_BEGIN();
+	while(true){
+		if(my_menu.u8_choice != 5){
+			// do nothing
+		} else {
+			// read the sensor
+			read_1631.dynamic_data = -1;
+		}
+		ESOS_TASK_WAIT_TICKS(10);
+	}
+	ESOS_TASK_END();
+}
+
+ESOS_USER_TASK( set_LEDs_task ) {
+	ESOS_TASK_BEGIN();
+	while(true){
+		// LED1 MSB
+		if(LEDs.entries[0].value | 0b100){
+			LED1_ON();
+		} else {
+			LED1_OFF();
+		}
+		// LED2
+		if(LEDs.entries[0].value | 0b010){
+			LED2_ON();
+		} else {
+			LED2_OFF();
+		}
+		// LED3
+		if(LEDs.entries[0].value | 0b001){
+			LED3_ON();
+		} else {
+			LED3_OFF();
+		}
+		ESOS_TASK_WAIT_TICKS(10);
+	}
+	ESOS_TASK_END();
+}

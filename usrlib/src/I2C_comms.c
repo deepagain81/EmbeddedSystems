@@ -42,13 +42,50 @@ bool I2C_out(uint8_t data){
 void write1_I2C(uint8_t u8_addr, uint8_t u8_d1){
 	// remember to reevaluate ACK conditions
 	// start I2C
+	startI2C();
 	// send address
+	if(!I2C_out(u8_addr)){
+		//printf("Error:")
+	}
 	// send data
+	if(!I2C_out(u8_d1)){
+		// printf("Error")
+	}
 	// stop I2C
+	stopI2C();
 }
-void write2_I2C(uint8_t u8_addr, uint8_t u8_d1, uint8_t u8_d2);
-void writeN_I2C(uint8_t u8_addr, uint8_t *pu8_d, uint16_t u16_cnt);
-uint8_t readI2C();
+void write2_I2C(uint8_t u8_addr, uint8_t u8_d1, uint8_t u8_d2){
+	startI2C();
+	I2C_out(u8_addr);
+	I2C_out(u8_d1);
+	I2C_out(u8_d2);
+	stopI2C();
+}
+void writeN_I2C(uint8_t u8_addr, uint8_t *pu8_d, uint16_t u16_cnt){
+	int i;
+	startI2C();
+	for(i=0;i<u16_cnt;i++){
+		I2C_out(pu8_d[i]);
+	}
+	stopI2C();
+}
+uint8_t readI2C(){
+	uint8_t data_in = 0;
+	int i = 0;
+	I2C_SET_CLOCK_LOW();
+	CONFIG_I2C_READ();
+	for(i=0; i<8; i++){
+		I2C_SET_CLOCK_HIGH();
+		data_in = data_in | IS_I2C_DATA_SET();
+		data_in = data_in << 1;
+		I2C_SET_CLOCK_LOW();
+	}
+	CONFIG_I2C_WRITE();
+	// ack
+	I2C_WRITE_LOW();
+	I2C_SET_CLOCK_HIGH();
+	I2C_SET_CLOCK_LOW();
+}
 void rstartI2C(){
 	startI2C();
 }

@@ -57,6 +57,13 @@ typedef struct {
 	esos_menu_entry_item_t entries[2];
 } esos_menu_entry_t;
 
+typedef struct {
+	char label[9];
+	int32_t dynamic_data;
+	uint8_t format;
+	//bool editable;
+} esos_menu_datadisplaymenu_t;
+
 // Call this to initialize the cherrymenu subsystem.
 void esos_menu_init(void);
 
@@ -83,6 +90,12 @@ void esos_menu_init(void);
 	ESOS_TASK_WAIT_UNTIL(__esos_menu_conf.e_menutype == NONE); \
 } while(0)
 
+#define ESOS_TASK_WAIT_ESOS_MENU_DATADISPLAYMENU(structure) do { \
+	esos_menu_datadisplaymenu_t *ps_menu = &structure; \
+	__esos_menu_conf.e_menutype = DATADISPLAY; \
+	__esos_menu_conf.pv_data = ps_menu; \
+	ESOS_TASK_WAIT_UNTIL(__esos_menu_conf.e_menutype == NONE); \
+} while(0)
 // Prototypes and definitions below this line are not part of the stable
 // API and should not be used by clients.  Here be dragons.
 
@@ -96,6 +109,7 @@ typedef struct {
 		LONGMENU,
 		STATICMENU,
 		ENTRY,
+		DATADISPLAY,
 	} e_menutype;
 	void *pv_data;
 } __esos_menu_conf_t;

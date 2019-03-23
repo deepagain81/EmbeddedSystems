@@ -58,6 +58,7 @@ bool RPGA_debounced_value, RPGB_debounced_value;
 static int8_t RPG_HISTORY[__RPG_HISTORY_BUFFER_LEN];
 static int RPG_HISTORY_INDEX; // points to the oldest value
 int8_t RPG_DIRECTION;
+int8_t LAST_RPG_DIRECTION;
 int i; // used in initilization for loop - RPG task
 
 // GET and SET switch thresholds
@@ -310,18 +311,12 @@ inline bool esos_uiF14_isRPGTurningFast( void ) {
 }
 
 inline bool esos_uiF14_isRPGTurningCW( void ) {
-	if (esos_uiF14_isRPGTurning()){
-		return (esos_uiF14_getRPGValue_u16 > esos_uiF14_getLastRPGCounter);
-	}
+	return RPG_DIRECTION == 1;
 	//return RPG_DIRECTION == 1;
 }
 
 inline bool esos_uiF14_isRPGTurningCCW( void ) {
-	#warning not tested
-	if (esos_uiF14_isRPGTurning()){
-		return (esos_uiF14_getRPGValue_u16 < esos_uiF14_getLastRPGCounter);
-	}
-	// return -1;
+	return RPG_DIRECTION == -1;
 }
 
 int16_t esos_uiF14_getRPGVelocity_i16( void ) {
@@ -531,9 +526,13 @@ ESOS_USER_TASK( __esos_uiF14_task ){
 			// ESOS_TASK_WAIT_ON_SEND_UINT8((char)RPGA_IS_HIGH() + '0');
 			// ESOS_TASK_WAIT_ON_SEND_STRING(" debounced A(): ");
 			// ESOS_TASK_WAIT_ON_SEND_UINT8((char)RPGA_debounced_value + '0');
-			//ESOS_TASK_WAIT_ON_SEND_STRING(" Velocity: ");
-			//ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(i32_RPG_velocity);
-			//ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+			ESOS_TASK_WAIT_ON_SEND_STRING(" Velocity: ");
+			ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(i32_RPG_velocity);
+			ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+			if(RPG_HISTORY[0]){
+				ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(RPG_HISTORY[0]);
+				ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+			}
 			ESOS_TASK_WAIT_TICKS(__ESOS_UIF14_UI_PERIOD_MS); // call task every 10 ms __ESOS_UIF14_UI_PERIOD_MS
 		}
 	}
@@ -609,6 +608,7 @@ ESOS_USER_TASK( __esos_uiF14_RPG_tracking_task ){
 				else{
 					RPG_DIRECTION = 0;
 				}
+				LAST_RPG_DIRECTION = RPG_DIRECTION;
 
 				// update history
 				i32_RPG_velocity -= RPG_HISTORY[RPG_HISTORY_INDEX]; // remove oldest value
@@ -646,6 +646,11 @@ ESOS_USER_TASK( __esos_uiF14_RPG_tracking_task ){
 
 				_st_esos_uiF14Data.u16_lastRPGCounter = _st_esos_uiF14Data.u16_RPGCounter;
 				i32_RPG_Last_Update_Timer_Base = esos_GetSystemTick(); // RPG has updated
+			} else { // RPG isn't moving
+				i32_RPG_velocity -= RPG_HISTORY[RPG_HISTORY_INDEX]; // remove oldest value
+				i32_RPG_velocity += 0; // add a zero
+				RPG_HISTORY[RPG_HISTORY_INDEX] = 0; // store new value in old values place
+				RPG_HISTORY_INDEX = (RPG_HISTORY_INDEX+1)%__RPG_HISTORY_BUFFER_LEN; // increment index to point to the new oldest value
 			}
 			// calculate velocity
 			/*if (velocity_iterations >= 10) {

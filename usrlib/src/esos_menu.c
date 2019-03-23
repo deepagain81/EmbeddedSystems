@@ -257,6 +257,47 @@ ESOS_USER_TASK(esos_menu_task)
 			}
 		}
 
+		while(__esos_menu_conf.e_menutype == DATADISPLAY) {
+			//static BOOL b_firstLine;
+			//static BOOL b_lastLine;
+			static esos_menu_datadisplaymenu_t *pst_menu;
+			static uint8_t au8_intbuffer[7];
+			//static BOOL b_dual_entry_selection;
+
+			// Draw the menu, then wait for a button
+			pst_menu = __esos_menu_conf.pv_data;
+
+			// Draw the lines
+			esos_lcd44780_clearScreen();
+			esos_lcd44780_writeString(0, 0, pst_menu->label);
+
+			// Wait for the user to spin the wheel, or press a button.
+			while(TRUE) {
+				// constantly update the display for the current value
+				itoa(pst_menu->dynamic_data, (char*)au8_intbuffer, 10);
+				esos_lcd44780_writeString(1, 0, (char*)au8_intbuffer);
+
+				if(esos_uiF14_isSW3Pressed() || esos_uiF14_isSW1Pressed() || esos_uiF14_isSW2Pressed()) {
+					// The user is done.  Bail out.
+					ESOS_TASK_WAIT_UNTIL(!(esos_uiF14_isSW3Pressed() || esos_uiF14_isSW1Pressed() || esos_uiF14_isSW2Pressed()));
+					__esos_menu_conf.e_menutype = NONE;
+					break;
+				}
+				// else if(esos_uiF14_isRPGTurning() && esos_uiF14_isRPGTurningCW() && !b_lastLine) {
+				// 	++pst_menu->u8_currentline;
+				// 	ESOS_TASK_WAIT_UNTIL(!esos_uiF14_isRPGTurning());
+				// 	break;
+				// }
+				// else if(esos_uiF14_isRPGTurning() && esos_uiF14_isRPGTurningCCW() && !b_firstLine) {
+				// 	--pst_menu->u8_currentline;
+				// 	ESOS_TASK_WAIT_UNTIL(!esos_uiF14_isRPGTurning());
+				// 	break;
+				// }
+				ESOS_TASK_YIELD();
+			}
+			ESOS_TASK_YIELD();
+		}
+
 		// Clean up the display after finishing a menu.
 		esos_lcd44780_clearScreen();
 	}
@@ -266,7 +307,7 @@ ESOS_USER_TASK(esos_menu_task)
 
 void esos_menu_init(void)
 {
-	config_esos_uiF14();
+	//config_esos_uiF14();
 	esos_lcd44780_configDisplay();
 	esos_lcd44780_init();
 
