@@ -237,6 +237,10 @@ ESOS_USER_TASK( fcn_synth ) {
 				
 				continue;
 			}
+			else if (menu_setWvform.u8_choice == 0){
+				// Display sine wave
+				continue;
+			}
 			else if (menu_setWvform.u8_choice == 1){
 				// Display sine wave
 				continue;
@@ -338,7 +342,8 @@ ESOS_USER_TASK( read_LM60_task ) {
 			ESOS_TASK_WAIT_SENSOR_READ(u16_sensor_millivolts, ESOS_SENSOR_AVG32, ESOS_SENSOR_FORMAT_VOLTAGE);
 			ESOS_SENSOR_CLOSE();
 			// convert to temperature
-			read_LM60.dynamic_data = 100000 * ((int32_t)u16_sensor_millivolts - 424) / 625; // removed 2 decimal places
+			u16_sensor_millivolts /= 3;
+			read_LM60.dynamic_data = 100000 * ((int32_t)u16_sensor_millivolts - 424) / 625 / 1000; // removed decimal places
 		}
 		ESOS_TASK_WAIT_TICKS(10);
 	}
@@ -363,22 +368,25 @@ ESOS_USER_TASK( set_LEDs_task ) {
 	ESOS_TASK_BEGIN();
 	while(true){
 		// LED1 MSB
-		if(LEDs.entries[0].value | 0b100){
-			LED1_ON();
+		if(LEDs.entries[0].value & 0b0000000000000100){
+			esos_uiF14_turnLED1On();
 		} else {
-			LED1_OFF();
+			esos_uiF14_turnLED1Off();
 		}
 		// LED2
-		if(LEDs.entries[0].value | 0b010){
-			LED2_ON();
+		if(LEDs.entries[0].value & 0b0000000000000010){ // 16 bits
+			esos_uiF14_turnLED2On();
 		} else {
-			LED2_OFF();
+			esos_uiF14_turnLED2Off();
 		}
+		// ESOS_TASK_WAIT_ON_SEND_STRING(" LED's settings: ");
+		// ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(LEDs.entries[0].value);
+		// ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 		// LED3
-		if(LEDs.entries[0].value | 0b001){
-			LED3_ON();
+		if(LEDs.entries[0].value & 0b0000000000000001){
+			esos_uiF14_turnLED3On();
 		} else {
-			LED3_OFF();
+			esos_uiF14_turnLED3Off();
 		}
 		ESOS_TASK_WAIT_TICKS(10);
 	}
