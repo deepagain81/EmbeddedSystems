@@ -219,6 +219,8 @@ ESOS_USER_TASK( fcn_synth ) {
 	//setDACA(0x3FF);
 	shutdownDACA();
 	shutdownDACB();
+	setDACA( 0x513 ); // proves that DACA works
+	setDACB( 0x0FF ); // proves that DACB works
 	startI2C();
 	write1_I2C(0b10010000, 0x51); // initiate conversion
 	stopI2C();
