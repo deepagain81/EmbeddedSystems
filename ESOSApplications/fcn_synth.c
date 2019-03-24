@@ -12,6 +12,7 @@
 #include "DAC_comms.h"
 #include "esos_sensor.h"
 
+#include <stdint.h> // for uint64_t
 // Array for waveforms
 #include "stdio.h"
 
@@ -27,51 +28,29 @@ const uint8_t au8_tritbl[] = {0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68
 const uint8_t au8_usr1tbl[] = {64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 uint16_t u16_sensor_millivolts;
+uint32_t u32_scaled_DAC_value;
+uint8_t  u8_wav_val; // temp storage for the current step of the wave
+uint16_t u16_volt_scale; // temp storage for current setting of wave amplitude
+uint16_t u16_DAC_wave_out_index; // initilized in fcn_synth task
+uint64_t sixty_four_test;
+
 // Config pin for output (here is where DAC comes into play)
 // #define WAVEOUT(_LATB2)
 // void config_waveout(){
 // 	CONFIG_RB2_AS_DIG_OUTPUT();
 // }
 
-// esos_RegisterTask(read_LM60_task); // not completed yet
-// 	esos_RegisterTask(read_1631_task); // not completed yet
-// 	esos_RegisterTask(set_LEDs_task);
-
 ESOS_USER_TASK( read_LM60_task );
 ESOS_USER_TASK( read_1631_task );
 ESOS_USER_TASK( set_LEDs_task );
 
-//Interrupt service ( DAC comes here, i guess)
-void _ISR_T2Interrupt(void){
-	//write to DAC
-
-	//increment index of array
-
-	// fetch next value
-
-	// multiple by amplitude and write to DAC
-	
-	//WAVEOUT = !WAVEOUT;
-	_T2IF = 0;	// clear interrupt flag
-}
+uint16_t usToTicks(uint16_t u16_us, uint16_t u16_pre);
+void configTimer2(void);
 
 // Timer2 configuration
 // 8 =  variable
 #define ISP_PERIOD	(8)	// actually 7.8 ms
-void configTimer2(void){
-	//set like thing for understanding could be set to register value 0x0020
-	T2CON = T2_OFF | T2_IDLE_CON | T2_GATE_OFF
-			| T2_32BIT_MODE_OFF
-			| T2_SOURCE_INT
-			| T2_PS_1_64;
 
-	PR2 = 5849;//msToU16Ticks(ISP_PERIOD, getTimerPrescale(T2CONbits))-1; 	// results to 5849;
-	TMR2 = 0;		// clear T2 value
-	_T2IF = 0;		// Clear interrupt flag
-	_T2IP = 1; 		//priority
-	_T2IE = 1; 		// Enable
-	T2CONbits.TON = 1;		// turn on the timer
-}//end timer config
 
 /*TODO: Ctrl+F replace all instances of mm with a name that abides
 		by the coding standards.
@@ -212,9 +191,11 @@ static esos_menu_entry_t ledfp = {
 // LCD 
 ESOS_USER_TASK( fcn_synth ) {
 	ESOS_TASK_BEGIN();
+	u16_DAC_wave_out_index = 0; // initilize to the first index of the wave
 	//setDACA(0x3FF);
 	shutdownDACA();
 	shutdownDACB();
+	configTimer2(); // output to DAC
 	while(TRUE){
 
 		// Display main menu until sw3 pressed
@@ -248,7 +229,10 @@ ESOS_USER_TASK( fcn_synth ) {
 
 			else if (menu_setWvform.u8_choice == 2){
 				// Display sqaure wave
-				configTimer2();
+				// make duty cycle visible
+				// reconfigure the timer appropriately
+				// reconfigure the timer interrupt to not use array, and reconfigure timer between interrupts
+				//configTimer2();
 				continue;
 			}
 
@@ -270,25 +254,24 @@ ESOS_USER_TASK( fcn_synth ) {
 				ESOS_TASK_WAIT_ESOS_MENU_STATICMENU(err);
 			}
 		}//end if else choice==8
-		else if (my_menu.u8_choice == 1)
+		else if (my_menu.u8_choice == 1){
 			ESOS_TASK_WAIT_ESOS_MENU_ENTRY(freq);
-		else if (my_menu.u8_choice == 2)
+			configTimer2();
+		} else if (my_menu.u8_choice == 2){
 		 	ESOS_TASK_WAIT_ESOS_MENU_ENTRY(ampltd);
-		else if (my_menu.u8_choice == 3)
+		} else if (my_menu.u8_choice == 3){
 		 	ESOS_TASK_WAIT_ESOS_MENU_ENTRY(duty); // should only appear when square wave is selected
-		else if (my_menu.u8_choice == 4){
+		 	//configTimer2();
+		} else if (my_menu.u8_choice == 4){
 			//readLM60();
 			ESOS_TASK_WAIT_ESOS_MENU_DATADISPLAYMENU(read_LM60);
-		}
-		else if (my_menu.u8_choice == 5){
+		} else if (my_menu.u8_choice == 5){
 			//read1631();
 			ESOS_TASK_WAIT_ESOS_MENU_DATADISPLAYMENU(read_1631);
-		}
-		else if (my_menu.u8_choice == 6){
+		} else if (my_menu.u8_choice == 6){
 			//setLEDS();
 			ESOS_TASK_WAIT_ESOS_MENU_ENTRY(LEDs);
-		}
-		else if (my_menu.u8_choice == 7){
+		} else if (my_menu.u8_choice == 7){
 		}
 	}// end while
 	ESOS_TASK_END();
@@ -302,23 +285,6 @@ ESOS_USER_TASK( fcn_synth ) {
 // 	}
 // 	ESOS_TASK_END();
 // }
-
-void user_init(){
-	config_esos_uiF14();
-	esos_menu_init();
-	esos_RegisterTask(fcn_synth);
-	esos_RegisterTask(read_LM60_task); // not completed yet
-	esos_RegisterTask(read_1631_task); // not completed yet
-	esos_RegisterTask(set_LEDs_task);
-	//esos_RegisterTask(flash_led);
-	//esos_RegisterTimer(heartbeat_LED, 500);
-	//esos_RegisterTask(get_temperature);
-}
-
-void setLEDS(){
-	// light up 7 LEDs (external leds i guess)
-	return;
-}
 
 //************************************************************************************//
 
@@ -391,4 +357,71 @@ ESOS_USER_TASK( set_LEDs_task ) {
 		ESOS_TASK_WAIT_TICKS(10);
 	}
 	ESOS_TASK_END();
+}
+
+// for timer use; avoid floats
+uint16_t usToTicks(uint16_t u16_us, uint16_t u16_pre){
+	uint64_t internal_freq;
+	uint64_t timerTicks;
+	internal_freq = 60000000; // 60 MHz
+	timerTicks = ( FCY * (uint64_t)u16_us) / (uint64_t)u16_pre / (uint64_t)1E6;
+	printf("u16_us: %d \nticks: %d \n",u16_us,(int)timerTicks);
+	return (uint16_t)timerTicks;
+}
+
+void configTimer2(void){
+	//set like thing for understanding could be set to register value 0x0020
+	T2CON = T2_OFF | T2_IDLE_CON | T2_GATE_OFF
+			| T2_32BIT_MODE_OFF
+			| T2_SOURCE_INT
+			| T2_PS_1_64;
+
+	//PR2 = 5849;//msToU16Ticks(ISP_PERIOD, getTimerPrescale(T2CONbits))-1; 	// results to 5849;
+	PR2 = usToTicks(((uint32_t)1E6/freq.entries[0].value), 64) - 1; // -1 since timout is actually PR2 - 1; get desired microsec by 1 mega / freq
+	printf("PR2: %d\n", PR2);
+	TMR2 = 0;		// clear T2 value
+	_T2IF = 0;		// Clear interrupt flag
+	_T2IP = 3; 		//priority
+	_T2IE = 1; 		// Enable
+	T2CONbits.TON = 1;		// turn on the timer
+}//end timer config
+
+//Interrupt service ( DAC comes here, i guess)
+void _ISR_T2Interrupt(void){
+	// get variables
+	u16_volt_scale = ampltd.entries[0].value;
+	if(menu_setWvform.u8_choice == 0){ //tri, sine, square, usr1
+		u8_wav_val = au8_tritbl[u16_DAC_wave_out_index];
+	} else if(menu_setWvform.u8_choice == 1) { // sine
+		u8_wav_val = au8_sinetbl[u16_DAC_wave_out_index];
+	} else if(menu_setWvform.u8_choice == 2) { // square
+		u8_wav_val = au8_sqrtbl[u16_DAC_wave_out_index];
+	}  else if(menu_setWvform.u8_choice == 3) { // usr1
+		u8_wav_val = au8_usr1tbl[u16_DAC_wave_out_index];
+	} else {
+		u8_wav_val = 0x7F; // default to DC of half the max if there is a problem
+	}
+	//write to DAC
+		// amplitude scaled value of the array - double length at least
+		u32_scaled_DAC_value = ((uint32_t)u8_wav_val * (uint32_t)u16_volt_scale * 16 / 33) + 
+		                       ((uint32_t)u8_wav_val * (uint32_t)u16_volt_scale * 15/33 / 255); // max of 0xFFF, min of 0x000
+		// send value to DACA
+		setDACA(u32_scaled_DAC_value);
+		printf("scaled DAC: %d\n", u32_scaled_DAC_value);
+	//increment index of array
+	u16_DAC_wave_out_index++;
+	//WAVEOUT = !WAVEOUT;
+	_T2IF = 0;	// clear interrupt flag
+}
+
+void user_init(){
+	config_esos_uiF14();
+	esos_menu_init();
+	esos_RegisterTask(fcn_synth);
+	esos_RegisterTask(read_LM60_task); // not completed yet
+	esos_RegisterTask(read_1631_task); // not completed yet
+	esos_RegisterTask(set_LEDs_task);
+	//esos_RegisterTask(flash_led);
+	//esos_RegisterTimer(heartbeat_LED, 500);
+	//esos_RegisterTask(get_temperature);
 }
