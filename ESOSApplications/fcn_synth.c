@@ -11,6 +11,7 @@
 #include "esos_lcd44780.h"
 #include "DAC_comms.h"
 #include "esos_sensor.h"
+#include "I2C_comms.h"
 
 #include <stdint.h> // for uint64_t
 // Array for waveforms
@@ -29,6 +30,7 @@ const uint8_t au8_usr1tbl[] = {64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,6
 
 uint16_t u16_sensor_millivolts;
 uint32_t u32_scaled_DAC_value;
+uint16_t u16_I2C_temp;
 uint8_t  u8_wav_val; // temp storage for the current step of the wave
 uint16_t u16_volt_scale; // temp storage for current setting of wave amplitude
 uint16_t u16_DAC_wave_out_index; // initilized in fcn_synth task
@@ -74,7 +76,7 @@ static esos_menu_longmenu_t my_menu = {
 		{ "Set",
 		"LEDs"},
 		{ "",
-		"Back..."},
+		"About..."},
 	},
 };
 
@@ -135,7 +137,7 @@ static esos_menu_entry_t freq = {
 // Selecting amplitude
 static esos_menu_entry_t ampltd = {
 	.entries[0].label = "amp(dV)=",
-	.entries[0].value = 0, //Default - unit is deciVolts
+	.entries[0].value = 16, //Default - unit is deciVolts
 	.entries[0].min = 0,
 	.entries[0].max = 33, // make this deciVolts
 };
@@ -175,6 +177,28 @@ static esos_menu_entry_t LEDs = {
 	.entries[0].max = 7,
 };
 
+static esos_menu_staticmenu_t about_menu = {
+	.u8_numlines = 11,
+	.u8_currentline = 0,
+	.lines = {"ESOS by",
+			 "Jones,",
+			 "Bruce, &",
+			 "Reese.",
+			 "Program",
+			 "by",
+			 "Benjamin",
+			 "Deepak",
+			 "Jordan",
+			 "Marcos",
+			 "Mehedi"}
+};
+
+// typedef struct {
+// 	uint8_t u8_numlines;
+// 	uint8_t u8_currentline;
+// 	char lines[][8];
+// } esos_menu_staticmenu_t;
+
 /*// Gives option to select from
 static esos_menu_entry_t ledfp = {
 	.entries[0].label = "Per = ",
@@ -195,11 +219,23 @@ ESOS_USER_TASK( fcn_synth ) {
 	//setDACA(0x3FF);
 	shutdownDACA();
 	shutdownDACB();
-	configTimer2(); // output to DAC
+	startI2C();
+	write1_I2C(0b10010000, 0x51); // initiate conversion
+	stopI2C();
+	ESOS_TASK_WAIT_TICKS(1000);
+	startI2C();
+	write1_I2C(0b10010000, 0xAA); // read temperature
+	rstartI2C();
+	u16_I2C_temp =  (uint16_t)readI2C(true) << 8;
+	u16_I2C_temp += (uint16_t)readI2C(false);
+	stopI2C();
+	printf("I2C read from temperature: %d\n",u16_I2C_temp);
+	//configTimer2(); // output to DAC
 	while(TRUE){
-
+		printf("Beginning of fcn_synth loop...\n");
 		// Display main menu until sw3 pressed
 		ESOS_TASK_WAIT_ESOS_MENU_LONGMENU(my_menu);
+		printf("LONG Menu exited...\n");
 
 		if (my_menu.u8_choice < 0) // must have atleast one option in menu
 			ESOS_TASK_WAIT_ESOS_MENU_STATICMENU(err);
@@ -257,6 +293,7 @@ ESOS_USER_TASK( fcn_synth ) {
 		else if (my_menu.u8_choice == 1){
 			ESOS_TASK_WAIT_ESOS_MENU_ENTRY(freq);
 			configTimer2();
+			printf("Back in ESOS!\n");
 		} else if (my_menu.u8_choice == 2){
 		 	ESOS_TASK_WAIT_ESOS_MENU_ENTRY(ampltd);
 		} else if (my_menu.u8_choice == 3){
@@ -272,6 +309,9 @@ ESOS_USER_TASK( fcn_synth ) {
 			//setLEDS();
 			ESOS_TASK_WAIT_ESOS_MENU_ENTRY(LEDs);
 		} else if (my_menu.u8_choice == 7){
+			// about menu
+			about_menu.u8_currentline = 0;
+			ESOS_TASK_WAIT_ESOS_MENU_STATICMENU(about_menu);
 		}
 	}// end while
 	ESOS_TASK_END();
@@ -369,6 +409,8 @@ uint16_t usToTicks(uint16_t u16_us, uint16_t u16_pre){
 	return (uint16_t)timerTicks;
 }
 
+// shouldn't implement hardware timers! Use ESOS!
+
 void configTimer2(void){
 	//set like thing for understanding could be set to register value 0x0020
 	T2CON = T2_OFF | T2_IDLE_CON | T2_GATE_OFF
@@ -384,6 +426,7 @@ void configTimer2(void){
 	_T2IP = 3; 		//priority
 	_T2IE = 1; 		// Enable
 	T2CONbits.TON = 1;		// turn on the timer
+	printf("End of Interrupt. Returning to ESOS...");
 }//end timer config
 
 //Interrupt service ( DAC comes here, i guess)

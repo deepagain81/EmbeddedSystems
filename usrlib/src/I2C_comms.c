@@ -24,7 +24,7 @@ bool I2C_out(uint8_t data){
 		} else {
 			I2C_WRITE_LOW();
 		}
-		data_to_send << 1;
+		data_to_send = data_to_send << 1;
 		I2C_SET_CLOCK_HIGH();
 		I2C_SET_CLOCK_LOW();
 	}
@@ -69,7 +69,7 @@ void writeN_I2C(uint8_t u8_addr, uint8_t *pu8_d, uint16_t u16_cnt){
 	}
 	stopI2C();
 }
-uint8_t readI2C(){
+uint8_t readI2C(bool b_should_ack){
 	uint8_t data_in = 0;
 	int i = 0;
 	I2C_SET_CLOCK_LOW();
@@ -82,9 +82,12 @@ uint8_t readI2C(){
 	}
 	CONFIG_I2C_WRITE();
 	// ack
-	I2C_WRITE_LOW();
+	if(b_should_ack){
+		I2C_WRITE_LOW();
+	}
 	I2C_SET_CLOCK_HIGH();
 	I2C_SET_CLOCK_LOW();
+	I2C_WRITE_HIGH();
 }
 void rstartI2C(){
 	startI2C();
