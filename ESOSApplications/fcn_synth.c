@@ -328,16 +328,6 @@ ESOS_USER_TASK( fcn_synth ) {
 // 	ESOS_TASK_END();
 // }
 
-//************************************************************************************//
-
-// to test A A A written on screen
-// int i = 0;
-// 				for(i = 0; i < 5; i++){
-// 					esos_lcd44780_clearScreen();
-// 					esos_lcd44780_writeChar( 0, i, 'A'+ i );
-
-// 				ESOS_TASK_WAIT_TICKS(500);
-// 				}
 
 ESOS_USER_TASK( read_LM60_task ) {
 	ESOS_TASK_BEGIN();
