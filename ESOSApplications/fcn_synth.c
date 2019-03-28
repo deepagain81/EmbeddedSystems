@@ -418,12 +418,14 @@ void configTimer2(void){
 	_T2IP = 3; 		//priority
 	_T2IE = 1; 		// Enable
 	T2CONbits.TON = 1;		// turn on the timer
-	printf("End of Interrupt. Returning to ESOS...");
+	printf("End of configTimer2(). Returning to ESOS...");
 }//end timer config
 
 //Interrupt service ( DAC comes here, i guess)
 void _ISR_T2Interrupt(void){
 	// get variables
+	LED1_ON();
+	printf("Hi\n");
 	u16_volt_scale = ampltd.entries[0].value;
 	if(menu_setWvform.u8_choice == 0){ //tri, sine, square, usr1
 		u8_wav_val = au8_tritbl[u16_DAC_wave_out_index];
@@ -441,7 +443,8 @@ void _ISR_T2Interrupt(void){
 		u32_scaled_DAC_value = ((uint32_t)u8_wav_val * (uint32_t)u16_volt_scale * 16 / 33) + 
 		                       ((uint32_t)u8_wav_val * (uint32_t)u16_volt_scale * 15/33 / 255); // max of 0xFFF, min of 0x000
 		// send value to DACA
-		setDACA(u32_scaled_DAC_value);
+		printf("Preparing to setDACA inside interrupt...\n");
+		setDACA((uint16_t)u32_scaled_DAC_value);
 		printf("scaled DAC: %d\n", u32_scaled_DAC_value);
 	//increment index of array
 	u16_DAC_wave_out_index++;
@@ -456,6 +459,7 @@ void user_init(){
 	esos_RegisterTask(read_LM60_task); // not completed yet
 	esos_RegisterTask(read_1631_task); // not completed yet
 	esos_RegisterTask(set_LEDs_task);
+	//configTimer2();
 	//esos_RegisterTask(flash_led);
 	//esos_RegisterTimer(heartbeat_LED, 500);
 	//esos_RegisterTask(get_temperature);
