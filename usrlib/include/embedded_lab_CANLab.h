@@ -11,7 +11,7 @@ typedef struct
     uint8_t u8_memberID;
 } CAN_ID;
 
-#define NUM_OF_IDS 10 // 8 Students + 1 TA + 1 Professor
+#define NUM_OF_IDS 22 // 20 Students + 1 TA + 1 Professor
 
 #define teamIDMask   0b0000011100000000   // eight teams
 #define memberIDMask 0b0000000011100000   // eight members

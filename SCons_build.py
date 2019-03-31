@@ -127,29 +127,32 @@ PIC24SupportLibObjects = env.Object(PIC24SupportLibSources)
 
 # Definition of targets
 # =====================
-if 'reset' in buildTargets:
-  buildWithCommonSources(['chap08/reset.c'], PIC24SupportLibObjects, env, {}, 'reset')
-if 'chap08' in buildTargets:
-  buildWithCommonSources(['chap08/*.c'], PIC24SupportLibObjects, env, {}, 'chap08')
-if 'chap09' in buildTargets:
-  buildWithCommonSources(['chap09/*.c'], PIC24SupportLibObjects, env, {}, 'chap09')
-if 'chap10' in buildTargets:
-  buildWithCommonSources(['chap10/*.c'],
-    PIC24SupportLibObjects, env,
-    {'chap10\\reverse_string.c'  : { 'CPPDEFINES': 'UART1_RX_INTERRUPT'},
-     'chap10\\reverse_string1.c' : { 'CPPDEFINES': ['UART1_RX_INTERRUPT', 'UART1_TX_INTERRUPT']}},
-    'chap10')
-if 'chap11' in buildTargets:
-  buildWithCommonSources(['chap11/*.c'], PIC24SupportLibObjects, env, {}, 'chap11')
-if 'chap12' in buildTargets:
-  buildWithCommonSources(['chap12/*.c'], PIC24SupportLibSources, env, {}, 'chap12')
-if 'chap13' in buildTargets:
-  buildWithCommonSources(['chap13/*.c'], PIC24SupportLibObjects, env,
-  {'chap13\\i2c_multmaster_rstring.c' :  { 'CPPDEFINES': 'CPU_ID=1' },
-   'chap13\\i2c_multmaster_rstring1.c' : { 'CPPDEFINES': 'CPU_ID=2' }},
-  'chap13')
-if 'chap15' in buildTargets:
-  # Currently, no files.
-  pass
-if 'explorer' in buildTargets:
-  buildWithCommonSources(['explorer16_100p/*.c'], PIC24SupportLibObjects, env, {}, 'explorer')
+if 'NonESOSApplications' in buildTargets:
+  buildWithCommonSources(['NonESOSApplications/*.c'], PIC24SupportLibObjects, env, {}, 'NonESOSApplications')
+##if 'reset' in buildTargets:
+##  buildWithCommonSources(['chap08/reset.c'], PIC24SupportLibObjects, env, {}, 'reset')
+##if 'chap08' in buildTargets:
+##  buildWithCommonSources(['chap08/*.c'], PIC24SupportLibObjects, env, {}, 'chap08')
+##if 'chap09' in buildTargets:
+##  buildWithCommonSources(['chap09/*.c'], PIC24SupportLibObjects, env, {}, 'chap09')
+##if 'chap10' in buildTargets:
+##  buildWithCommonSources(['chap10/*.c'],
+##    PIC24SupportLibObjects, env,
+##    {'chap10\\reverse_string.c'  : { 'CPPDEFINES': 'UART1_RX_INTERRUPT'},
+##     'chap10\\reverse_string1.c' : { 'CPPDEFINES': ['UART1_RX_INTERRUPT', 'UART1_TX_INTERRUPT']}},
+##    'chap10')
+##if 'chap11' in buildTargets:
+##  buildWithCommonSources(['chap11/*.c'], PIC24SupportLibObjects, env, {}, 'chap11')
+##if 'chap12' in buildTargets:
+##  buildWithCommonSources(['chap12/*.c'], PIC24SupportLibSources, env, {}, 'chap12')
+##if 'chap13' in buildTargets:
+##  buildWithCommonSources(['chap13/*.c'], PIC24SupportLibObjects, env,
+##  {'chap13\\i2c_multmaster_rstring.c' :  { 'CPPDEFINES': 'CPU_ID=1' },
+##   'chap13\\i2c_multmaster_rstring1.c' : { 'CPPDEFINES': 'CPU_ID=2' }},
+##  'chap13')
+##if 'chap15' in buildTargets:
+##  # Currently, no files.
+##  pass
+##if 'explorer' in buildTargets:
+##  buildWithCommonSources(['explorer16_100p/*.c'], PIC24SupportLibObjects, env, {}, 'explorer')
+##
