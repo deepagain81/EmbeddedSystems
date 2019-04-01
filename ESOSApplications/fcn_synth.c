@@ -52,6 +52,8 @@ void configTimer2(void);
 // Timer2 configuration
 // 8 =  variable
 #define ISP_PERIOD	(8)	// actually 7.8 ms
+#define WAITING_FOR_FALLING_EDGE  ESOS_USER_FLAG_0
+#define CAPTURED_FLAG             ESOS_USER_FLAG_1
 
 
 /*TODO: Ctrl+F replace all instances of mm with a name that abides
@@ -414,9 +416,10 @@ void configTimer2(void){
 	PR2 = usToTicks(((uint32_t)1E6/freq.entries[0].value), 64) - 1; // -1 since timout is actually PR2 - 1; get desired microsec by 1 mega / freq
 	printf("PR2: %d\n", PR2);
 	TMR2 = 0;		// clear T2 value
-	_T2IF = 0;		// Clear interrupt flag
-	_T2IP = 3; 		//priority
-	_T2IE = 1; 		// Enable
+	//_T2IF = 0;		// Clear interrupt flag
+	//_T2IP = 3; 		//priority
+	//_T2IE = 1; 		// Enable
+	ESOS_MARK_PIC24_USER_INTERRUPT_SERVICED(ESOS_IRQ_PIC24_T2); // pg 625
 	T2CONbits.TON = 1;		// turn on the timer
 	printf("End of configTimer2(). Returning to ESOS...");
 }//end timer config
