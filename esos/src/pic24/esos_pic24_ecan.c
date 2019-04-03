@@ -75,7 +75,7 @@ void __esos_ecan_hw_config_ecan ( void ) {
     CONFIG_C1TX_TO_RP(102);
     RPINR26bits.C1RXR = 101;
 
-    CHANGE_MODE_ECAN1(ECAN_LISTEN_ALL_MESSAGES);
+    CHANGE_MODE_ECAN1(ECAN_MODE_NORMAL);
     
     return;
 }

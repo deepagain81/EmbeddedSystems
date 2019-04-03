@@ -14,10 +14,10 @@
 
 ESOS_USER_TASK(listen_for_can_messages) {
 	ESOS_TASK_BEGIN();
-	uint8_t buf[8] = {0};
-    uint8_t u8_len;
-    uint16_t u16_can_id;
-    int i; // see for loop below
+	static uint8_t buf[8] = {0};
+    static uint8_t u8_len;
+    static uint16_t u16_can_id;
+    static int i; // see for loop below
 
     esos_uiF14_flashLED3(1000);
 	esos_ecan_canfactory_subscribe( __pstSelf, 0x7a0, 0x0000, MASKCONTROL_FIELD_NONZERO );
@@ -52,6 +52,7 @@ void user_init(){
 	config_esos_uiF14();
 	esos_RegisterTask(CANFactory);
 	esos_RegisterTask(listen_for_can_messages);
+	CHANGE_MODE_ECAN1(ECAN_MODE_LISTEN_ONLY);
 	//esos_RegisterTimer(heartbeat_LED, 500);
 	//esos_RegisterTask(get_temperature);
 }
