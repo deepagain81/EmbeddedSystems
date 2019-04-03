@@ -94,7 +94,7 @@ ESOS_USER_TASK ( ecan_sender ) {
         LED1 = buf[0];
         LED2 = buf[1];
         
-        ESOS_ECAN_SEND( 0x7a0, buf, 2 );
+        ESOS_ECAN_SEND( 0x7a0, buf, 2 );    //CAN_id, msg, msg_len
         
         ESOS_TASK_WAIT_TICKS( 10 );
     }
