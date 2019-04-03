@@ -16,7 +16,9 @@ ESOSSupportLibSources = [
   'src/esos_pic24_lcd44780.c',
   'src/esos_menu.c',
   'src/fall17lib.c',
+  'src/esos_ecan.c',
   'src/DAC_comms.c',
-  'src/I2C_comms.c']
+  'src/I2C_comms.c',
+  '../esos/src/pic24/esos_pic24_ecan.c']
 
 env = env.Clone(CPPDEFINES=['BUILT_ON_ESOS' '_NOASSERT'])

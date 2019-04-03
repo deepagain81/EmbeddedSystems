@@ -43,6 +43,7 @@ for sourceFile in Glob('ESOSApplications/*.c', True, True, True):
         'lib/src/pic24_util.c',
         'lib/src/pic24_serial.c',
         'lib/src/pic24_uart.c',
+        'lib/src/pic24_ecan.c',
         'esos/src/esos.c',
         'esos/src/esos_comm.c',
         'esos/src/esos_cb.c',
@@ -60,7 +61,9 @@ for sourceFile in Glob('ESOSApplications/*.c', True, True, True):
         'usrlib/src/esos_menu.c',
         'usrlib/src/fall17lib.c',
         'usrlib/src/DAC_comms.c',
-        'usrlib/src/I2C_comms.c'])
+        'usrlib/src/I2C_comms.c',
+        'usrlib/src/esos_ecan.c',
+        'esos/src/pic24/esos_pic24_ecan.c'])
     linker_side_effect(env, p)
     # Convert it to a .hex
     bin2hex(sourceFile, env, 'esos')
