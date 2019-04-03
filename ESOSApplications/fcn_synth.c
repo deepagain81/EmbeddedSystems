@@ -420,12 +420,16 @@ void configTimer2(void){
 	//_T2IP = 3; 		//priority
 	//_T2IE = 1; 		// Enable
 	ESOS_MARK_PIC24_USER_INTERRUPT_SERVICED(ESOS_IRQ_PIC24_T2); // pg 625
+
+	ESOS_REGISTER_PIC24_USER_INTERRUPT( ESOS_IRQ_PIC24_INT1, ESOS_USER_IRQ_LEVEL1, _ISR_T2Interrupt);
+  	ESOS_ENABLE_PIC24_USER_INTERRUPT(ESOS_IRQ_PIC24_INT1);
 	T2CONbits.TON = 1;		// turn on the timer
 	printf("End of configTimer2(). Returning to ESOS...");
 }//end timer config
 
 //Interrupt service ( DAC comes here, i guess)
-void _ISR_T2Interrupt(void){
+//void _ISR_T2Interrupt(void){
+ESOS_USER_INTERRUPT( ESOS_IRQ_PIC24_INT1 ) { // ESOS_IRQ_PIC24_T2
 	// get variables
 	LED1_ON();
 	printf("Hi\n");
@@ -462,7 +466,9 @@ void user_init(){
 	esos_RegisterTask(read_LM60_task); // not completed yet
 	esos_RegisterTask(read_1631_task); // not completed yet
 	esos_RegisterTask(set_LEDs_task);
-	//configTimer2();
+
+	
+	configTimer2();
 	//esos_RegisterTask(flash_led);
 	//esos_RegisterTimer(heartbeat_LED, 500);
 	//esos_RegisterTask(get_temperature);
