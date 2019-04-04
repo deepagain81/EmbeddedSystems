@@ -54,7 +54,5 @@ void user_init(){
 	config_esos_uiF14();
 	esos_RegisterTask(CANFactory);
 	esos_RegisterTask(listen_for_can_messages);
-	CHANGE_MODE_ECAN1(ECAN_MODE_LISTEN_ONLY);
 	//esos_RegisterTimer(heartbeat_LED, 500);
-	//esos_RegisterTask(get_temperature);
 }
