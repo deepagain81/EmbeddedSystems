@@ -165,7 +165,7 @@ ESOS_USER_TASK ( CANFactory ) {
             static uint8_t         u8_len, u8_payload_len;
             static uint16_t u16_can_id;
             // DEBUG
-			     ESOS_TASK_WAIT_ON_SEND_STRING("CANFACTORY GOT MESSAGE - to send\n");
+			ESOS_TASK_WAIT_ON_SEND_STRING("CANFACTORY GOT MESSAGE - to send\n");
             // DEBUG
             ESOS_TASK_GET_NEXT_MESSAGE( &st_Msg );
             u8_len = ESOS_GET_PMSG_DATA_LENGTH( ( &st_Msg ) );
