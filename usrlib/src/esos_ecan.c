@@ -41,7 +41,7 @@
 #include    <string.h>
 #include    "esos.h"
 #include    "esos_ecan.h"
-#include    "pic24/esos_pic24_ecan.h"
+#include    "esos_pic24_ecan.h"
 
 /*** D E F I N E ******************************************************/
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
