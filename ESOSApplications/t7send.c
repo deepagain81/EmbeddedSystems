@@ -95,8 +95,8 @@ ESOS_USER_TASK ( ecan_sender ) {
         LED2 = buf[1];
         
         ESOS_ECAN_SEND( 0x7a0, buf, 2 );    //CAN_id, msg, msg_len
-        ESOS_TASK_WAIT_ON_SEND_STRING("SENT\n");
-        ESOS_TASK_WAIT_TICKS( 10 );
+          ESOS_TASK_WAIT_ON_SEND_STRING("SENT\n");
+        ESOS_TASK_WAIT_TICKS( 500 );
     }
     
     ESOS_TASK_END();
@@ -114,6 +114,9 @@ void user_init ( void ) {
     CONFIG_LED3();
     CONFIG_SW1();
     CONFIG_SW2();
+
+    __esos_ecan_hw_config_ecan(); // ECAN config
+    CHANGE_MODE_ECAN1(ECAN_MODE_NORMAL);
     
     esos_RegisterTask( heartbeat_LED );
     esos_RegisterTask( CANFactory );

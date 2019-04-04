@@ -156,13 +156,14 @@ int main(void){
 	while (1) {
 		doHeartbeat();
 		if(_DMA1IF){ // message received
-			_DMA1IF = 0; // RX message accepted
+			
 			rx_buff_id = GET_FIFO_READBUFFER_ECAN1();
 			//printf("rx_buff_id = %d\n", rx_buff_id);
 			u32_in0 = msgBuf[rx_buff_id].data.u32[0];
 			u32_in1 = msgBuf[rx_buff_id].data.u32[1];
 			printf("Rx Buff: %d. Msg ID: 0x%X, Received Message: 0x%08lX%08lX\n",
 				rx_buff_id, msgBuf[rx_buff_id].w0.SID, u32_in0, u32_in1);
+			_DMA1IF = 0; // RX message accepted
 			clrRxFullFlagECAN1(rx_buff_id);
 		}
 		// DELAY_MS(500);

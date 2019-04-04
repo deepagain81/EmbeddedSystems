@@ -421,7 +421,7 @@ void configTimer2(void){
 	//_T2IE = 1; 		// Enable
 	ESOS_MARK_PIC24_USER_INTERRUPT_SERVICED(ESOS_IRQ_PIC24_T2); // pg 625
 
-	ESOS_REGISTER_PIC24_USER_INTERRUPT( ESOS_IRQ_PIC24_INT1, ESOS_USER_IRQ_LEVEL1, _ISR_T2Interrupt);
+	ESOS_REGISTER_PIC24_USER_INTERRUPT( ESOS_IRQ_PIC24_INT1, ESOS_USER_IRQ_LEVEL1, _T2Interrupt);
   	ESOS_ENABLE_PIC24_USER_INTERRUPT(ESOS_IRQ_PIC24_INT1);
 	T2CONbits.TON = 1;		// turn on the timer
 	printf("End of configTimer2(). Returning to ESOS...");
@@ -431,7 +431,7 @@ void configTimer2(void){
 //void _ISR_T2Interrupt(void){
 ESOS_USER_INTERRUPT( ESOS_IRQ_PIC24_INT1 ) { // ESOS_IRQ_PIC24_T2
 	// get variables
-	LED1_ON();
+	//esos_uiF14_turnLED1On();
 	printf("Hi\n");
 	u16_volt_scale = ampltd.entries[0].value;
 	if(menu_setWvform.u8_choice == 0){ //tri, sine, square, usr1

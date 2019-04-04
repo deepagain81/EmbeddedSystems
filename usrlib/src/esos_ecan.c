@@ -74,10 +74,11 @@ ESOS_USER_TASK ( CANFactory ) {
 	static uint8_t          u8_len;
 	static uint16_t         u16_rx_buff_id, u16_msg_id;
 	static ESOS_TASK_HANDLE hTask;
+    static int i;
 	//__esos_ecan_hw_config_ecan();
 	ESOS_TASK_BEGIN();
 	//DISABLE_DEBUG_MODE();
-	__esos_ecan_hw_config_ecan();
+	//__esos_ecan_hw_config_ecan(); - should be in user-init
     while ( TRUE ) {
         /* Check to see if any CAN messages have arrived.
          * If so, parse and send mail to the appropriate task.
@@ -106,6 +107,15 @@ ESOS_USER_TASK ( CANFactory ) {
                             au8_msgBuf[ sizeof( uint16_t ) + u8_count ] = __esos_ecan_msgBuf[ u16_rx_buff_id ].data.u8[u8_count];
 
                         }
+
+                        // DEBUG
+                        ESOS_TASK_WAIT_ON_SEND_STRING("DEBUG: au8_msgBuf: ");
+                        for(i = 0; i<8; i++){
+                            ESOS_TASK_WAIT_ON_SEND_UINT8(au8_msgBuf[i]+'0');
+                        }
+                        ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+                        // END DEBUG
+
                         ESOS_TASK_MAKE_MSG_AUINT8( st_Msg, au8_msgBuf, sizeof( uint8_t ) * u8_len + sizeof( uint16_t ) );
                         ESOS_TASK_SEND_MESSAGE( hTask, &st_Msg );
 
@@ -164,15 +174,15 @@ ESOS_USER_TASK ( CANFactory ) {
             u8_y = 0;
             for ( u8_i = 0; u8_i < u8_payload_len; ++u8_i ) {
                 temp_Msg.data.u8[ u8_i ] = st_Msg.au8_Contents[ u8_i + 2 ];
-                //ESOS_TASK_WAIT_ON_AVAILABLE_OUT_COMM();
-                //ESOS_TASK_WAIT_ON_SEND_STRING("data: ");
-                //ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(st_Msg.au8_Contents[u8_i + 2]);
-                //ESOS_TASK_WAIT_ON_SEND_STRING("\n");
-                //ESOS_TASK_SIGNAL_AVAILABLE_OUT_COMM();
+                ESOS_TASK_WAIT_ON_AVAILABLE_OUT_COMM();
+                ESOS_TASK_WAIT_ON_SEND_STRING("data: ");
+                ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(st_Msg.au8_Contents[u8_i + 2]);
+                ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+                ESOS_TASK_SIGNAL_AVAILABLE_OUT_COMM();
             }
-			/*ESOS_TASK_WAIT_ON_AVAILABLE_OUT_COMM();
+			ESOS_TASK_WAIT_ON_AVAILABLE_OUT_COMM();
 			ESOS_TASK_WAIT_ON_SEND_UINT8(temp_Msg.data.u8[1]);
-			ESOS_TASK_SIGNAL_AVAILABLE_OUT_COMM();*/
+			ESOS_TASK_SIGNAL_AVAILABLE_OUT_COMM();
 
             __esos_ecan_hw_format_and_send( &temp_Msg, u16_can_id, u8_payload_len );
             ESOS_TASK_WAIT_WHILE( __ESOS_ECAN_HW_TX_IN_PROGRESS() ); //It freezes here.

@@ -32,7 +32,7 @@ ESOS_USER_TASK(listen_for_can_messages) {
         ESOS_TASK_WAIT_FOR_MAIL();
         ESOS_TASK_GET_NEXT_MESSAGE( &msg );
         u16_can_id = msg.au16_Contents[0];
-        u8_len = ESOS_GET_PMSG_DATA_LENGTH( ( &msg - sizeof( uint16_t ) ) );
+        u8_len = ESOS_GET_PMSG_DATA_LENGTH( (&msg) ) - sizeof( uint16_t );
         memcpy( buf, &msg.au8_Contents[ sizeof( uint16_t ) ], u8_len );
         ESOS_TASK_WAIT_ON_SEND_STRING("! ");
         for(i = 0; i<8; i++){
@@ -49,6 +49,8 @@ ESOS_USER_TASK(listen_for_can_messages) {
 }
 
 void user_init(){
+	__esos_ecan_hw_config_ecan(); // ECAN config
+	CHANGE_MODE_ECAN1(ECAN_MODE_LISTEN_ONLY);
 	config_esos_uiF14();
 	esos_RegisterTask(CANFactory);
 	esos_RegisterTask(listen_for_can_messages);

@@ -59,7 +59,7 @@ void __esos_ecan_hw_config_ecan ( void ) {
     C1CFG2 = 0x45da;
     
     C1FCTRL = ECAN_FIFO_START_AREA_1 | ECAN_DMA_BUF_SIZE_8;
-    configRxFilterECAN1( 0, 0x7a0, 0, 1, 0 ); // 2nd to last argument used to be 15 - for FIFO operation
+    configRxFilterECAN1( 0, 0x7a0, 0, 15, 0 ); // 2nd to last argument used to be 15 - for FIFO operation
     configRxMaskECAN1( 0, 0x000, 0, 0 );
     clrRxFullOvfFlagsECAN1();
     
@@ -77,7 +77,7 @@ void __esos_ecan_hw_config_ecan ( void ) {
     CONFIG_C1TX_TO_RP(102);
     RPINR26bits.C1RXR = 101;
 
-    CHANGE_MODE_ECAN1(ECAN_MODE_NORMAL);
+    //CHANGE_MODE_ECAN1(ECAN_MODE_NORMAL); - change ECAN mode in user init
     
     return;
 }
