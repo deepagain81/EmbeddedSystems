@@ -51,7 +51,7 @@ ESOS_USER_TASK(listen_only)
 	u16_usrInput = inString();
 
 	//must subscribe to canfactory to hear can msg.
-	esos_ecan_canfactory_subscribe(__pstSelf, 0x7a0, 0xfffc, MASKCONTROL_FIELD_NONZERO);	// param--> xxxx, rcv_id, xxxx, filter specification
+	esos_ecan_canfactory_subscribe(__pstSelf, 0x7a0, 0x0000, MASKCONTROL_FIELD_NONZERO);	// param--> current task(points to self), rcv_id, mask->it matches with bits, filter specification
 	esos_uiF14_flashLED3(500);
 
 	while(1)
@@ -68,28 +68,28 @@ ESOS_USER_TASK(listen_only)
 
         // get the id and msg itself
         u16_canID = msg.au16_Contents[0];	// this comes from frame structure
+        ESOS_TASK_WAIT_ON_SEND_STRING("msg id: ");
+        ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(u16_canID);
+        ESOS_TASK_WAIT_ON_SEND_STRING("\n***-------------------------------***\n");
 
-        if (u16_usrInput == u16_canID)
-        {
-        	u8_len = ESOS_GET_PMSG_DATA_LENGTH((&msg)) - sizeof(uint16_t);	// 
-	        ESOS_TASK_WAIT_ON_SEND_STRING("u8_len: ");
-	        ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(u8_len);
-	        ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 
-	        //copy that msg into memory
-	        memcpy(buf, &msg.au8_Contents[sizeof(uint16_t)], u8_len);	// param--> varName, msg itself(start point), len of msg to store
-	        //print msg to check we got right msg
-	        ESOS_TASK_WAIT_ON_SEND_STRING("Buf[0]:");
-	        ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(buf[0]);
-	        ESOS_TASK_WAIT_ON_SEND_STRING("\nBuf[1]: ");
-	        ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(buf[1]);
-	        ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+       
+    	u8_len = ESOS_GET_PMSG_DATA_LENGTH((&msg)) - sizeof(uint16_t);	// 
+        ESOS_TASK_WAIT_ON_SEND_STRING("u8_len: ");
+        ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(u8_len);
+        ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 
-	        //Update what needs to once we receive msg.
+        //copy that msg into memory
+        memcpy(buf, &msg.au8_Contents[sizeof(uint16_t)], u8_len);	// param--> varName, msg itself(start point), len of msg to store
+        //print msg to check we got right msg
+        ESOS_TASK_WAIT_ON_SEND_STRING("Buf[0]:");
+        ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(buf[0]);
+        ESOS_TASK_WAIT_ON_SEND_STRING("\nBuf[1]: ");
+        ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(buf[1]);
+        ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 
-        }else{
-        	ESOS_TASK_WAIT_ON_SEND_STRING("No user available with your input user_id.\n ");
-        }
+        //code for "What to do once we receive msg goes here"
+
         
 
 
