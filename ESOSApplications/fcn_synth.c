@@ -232,11 +232,14 @@ ESOS_USER_TASK( fcn_synth ) {
 	// write1_I2C(0b10010000, 0x51); // initiate conversion
 	ESOS_TASK_WAIT_ON_WRITE1I2C1(0b10010000, 0x51); // initiate conversion
 	// stopI2C();
-	ESOS_TASK_WAIT_TICKS(1000);
+	ESOS_TASK_WAIT_TICKS(1000); // wait for temperture to be measured
 	// startI2C();
 	// write1_I2C(0b10010000, 0xAA); // read temperature
-	ESOS_TASK_WAIT_ON_WRITE1I2C1( 0b10010000, 0xAA ); // read temperature
-	ESOS_TASK_WAIT_ON_READ2I2C1( 0b10010000, u8_d1, u8_d2 );
+		//ESOS_TASK_WAIT_ON_WRITE1I2C1( 0b10010000, 0xAA ); // read temperature
+		//ESOS_TASK_WAIT_ON_READ2I2C1( 0b10010000, u8_d1, u8_d2 );
+	// read temp data
+	
+
 	u16_I2C_temp = ((uint16_t)u8_d1 << 8) | u8_d2;
 	// rstartI2C();
 	// u16_I2C_temp =  (uint16_t)readI2C(true) << 8;
@@ -245,10 +248,10 @@ ESOS_USER_TASK( fcn_synth ) {
 	printf("I2C read from temperature: %d\n",u16_I2C_temp);
 	//configTimer2(); // output to DAC
 	while(TRUE){
-		printf("Beginning of fcn_synth loop...\n");
+		//printf("Beginning of fcn_synth loop...\n");
 		// Display main menu until sw3 pressed
 		ESOS_TASK_WAIT_ESOS_MENU_LONGMENU(my_menu);
-		printf("LONG Menu exited...\n");
+		//printf("LONG Menu exited...\n");
 
 		if (my_menu.u8_choice < 0) // must have atleast one option in menu
 			ESOS_TASK_WAIT_ESOS_MENU_STATICMENU(err);
@@ -307,7 +310,7 @@ ESOS_USER_TASK( fcn_synth ) {
 		else if (my_menu.u8_choice == 1){
 			ESOS_TASK_WAIT_ESOS_MENU_ENTRY(freq);
 			configTimer2();
-			printf("Back in ESOS!\n");
+			//printf("Back in ESOS!\n");
 		} else if (my_menu.u8_choice == 2){
 		 	ESOS_TASK_WAIT_ESOS_MENU_ENTRY(ampltd);
 		} else if (my_menu.u8_choice == 3){
@@ -434,7 +437,7 @@ void configTimer2(void){
 	ESOS_REGISTER_PIC24_USER_INTERRUPT( ESOS_IRQ_PIC24_T2, ESOS_USER_IRQ_LEVEL1, _T2Interrupt);
   	ESOS_ENABLE_PIC24_USER_INTERRUPT(ESOS_IRQ_PIC24_T2);
 	T2CONbits.TON = 1;		// turn on the timer
-	printf("End of configTimer2(). Returning to ESOS...");
+	//printf("End of configTimer2(). Returning to ESOS...");
 }//end timer config
 
 //Interrupt service ( DAC comes here, i guess)

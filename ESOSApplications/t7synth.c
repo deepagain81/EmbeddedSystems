@@ -110,6 +110,10 @@ ESOS_USER_TASK ( monitor_for_beacons ) {
     static uint8_t  u8_received_member_id;
     static uint8_t  u8_received_message_type;
     static uint16_t u16_received_arr_index;
+
+    // active board record keeping (u32_SW1_debounce_Timer_Base + __SWITCH_DEBOUNCING_INTERVAL) <= esos_GetSystemTick()
+    static uint32_t u32_active_board_timout_time[NUM_OF_IDS] = {0}; // default to zero - no boards are discovered
+    static uint16_t u16_timout_check_index;
     
     ESOS_TASK_BEGIN();
     
@@ -119,6 +123,9 @@ ESOS_USER_TASK ( monitor_for_beacons ) {
     
     while ( 1 ) {
         static MAILMESSAGE msg;
+
+        // current board is always active
+        u32_active_board_timout_time[MY_ID] = esos_GetSystemTick() + USR_ECAN_BEACON_TIMEOUT_INTERVAL;
         
         //ESOS_TASK_WAIT_FOR_MAIL();
         if(ESOS_TASK_IVE_GOT_MAIL()){
@@ -130,44 +137,51 @@ ESOS_USER_TASK ( monitor_for_beacons ) {
             u8_received_member_id    = stripMemberID(u16_canID);
             u8_received_message_type = stripTypeID(u16_canID);
             u16_received_arr_index   = getArrayIndexFromMsgID(u16_canID);
-            // print msg id
-            ESOS_TASK_WAIT_ON_SEND_STRING("t7synth TEST\n");
-            ESOS_TASK_WAIT_ON_SEND_STRING("msg id: ");
-            ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(u16_canID);
-            ESOS_TASK_WAIT_ON_SEND_STRING(" team #");
-            ESOS_TASK_WAIT_ON_SEND_UINT8_AS_DEC_STRING(u8_received_team_id);
-            ESOS_TASK_WAIT_ON_SEND_STRING(" member #");
-            ESOS_TASK_WAIT_ON_SEND_UINT8_AS_DEC_STRING(u8_received_member_id);
-            // output member name, if in range
-            ESOS_TASK_WAIT_ON_SEND_STRING("(");
-            if(u16_received_arr_index < NUM_OF_IDS){
-                ESOS_TASK_WAIT_ON_SEND_STRING(aCANID_IDs[u16_received_arr_index].psz_name);
+
+            // received message will be of type beacon - therefore, simply add to the list of active boards
+            if(u16_received_arr_index >= 0 && u16_received_arr_index < NUM_OF_IDS){
+                u32_active_board_timout_time[u16_received_arr_index] = esos_GetSystemTick() + USR_ECAN_BEACON_TIMEOUT_INTERVAL; // sets the system time to timeout this board
+                ESOS_TASK_WAIT_ON_SEND_STRING("Beacon received from id ");
+                ESOS_TASK_WAIT_ON_SEND_UINT8_AS_DEC_STRING(u16_received_arr_index);
                 ESOS_TASK_WAIT_ON_SEND_STRING(" - ");
                 ESOS_TASK_WAIT_ON_SEND_STRING(aCANID_IDs[u16_received_arr_index].psz_netID);
+                ESOS_TASK_WAIT_ON_SEND_STRING("\n");
             } else {
-                ESOS_TASK_WAIT_ON_SEND_STRING("???");
+                ESOS_TASK_WAIT_ON_SEND_STRING("Received beacon does not have a valid board ID.\n");
             }
-            ESOS_TASK_WAIT_ON_SEND_STRING(")");
-            // print msg type
-            ESOS_TASK_WAIT_ON_SEND_STRING(" MSG TYPE: ");
-            if(u8_received_message_type < 10){
-                ESOS_TASK_WAIT_ON_SEND_STRING(CAN_MESSAGE_TYPE_DESCRIPTION[u8_received_message_type]);
-            } else {
-                ESOS_TASK_WAIT_ON_SEND_STRING("???");
-            }
-
-            ESOS_TASK_WAIT_ON_SEND_STRING("\n***-------------------------------***\n");
-           
-            u8_len = ESOS_GET_PMSG_DATA_LENGTH((&msg)) - sizeof(uint16_t);  // 
-            ESOS_TASK_WAIT_ON_SEND_STRING("u8_len: ");
-            ESOS_TASK_WAIT_ON_SEND_UINT8_AS_DEC_STRING(u8_len);
-            ESOS_TASK_WAIT_ON_SEND_STRING("\n");
         }//end if
+
+        // remove inactive beacons
+        for(u16_timout_check_index = 0; u16_timout_check_index < NUM_OF_IDS; u16_timout_check_index++) {
+            if(u32_active_board_timout_time[u16_timout_check_index] <= esos_GetSystemTick() && u32_active_board_timout_time[u16_timout_check_index] != 0){ // if system tick has passed timeout time
+                u32_active_board_timout_time[u16_timout_check_index] = 0; // mark as invalid
+                ESOS_TASK_WAIT_ON_SEND_STRING("Board has timeout out - Index: ");
+                ESOS_TASK_WAIT_ON_SEND_UINT8_AS_DEC_STRING(u16_timout_check_index);
+                ESOS_TASK_WAIT_ON_SEND_STRING(" netid: ");
+                ESOS_TASK_WAIT_ON_SEND_STRING(aCANID_IDs[u16_timout_check_index].psz_netID);
+                ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+            } 
+        } // end for loop - check for inactive beacons
+
+        // for debugging, print the current list of active boards
+        if(esos_uiF14_isSW2DoublePressed()){
+            ESOS_TASK_WAIT_ON_SEND_STRING("Current active boards:\n");
+            for(u16_timout_check_index = 0; u16_timout_check_index < NUM_OF_IDS; u16_timout_check_index++){
+                if( u32_active_board_timout_time[u16_timout_check_index] != 0){
+                    ESOS_TASK_WAIT_ON_SEND_STRING("netid: ");
+                    ESOS_TASK_WAIT_ON_SEND_STRING(aCANID_IDs[u16_timout_check_index].psz_netID);
+                    ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+                }
+            }
+            ESOS_TASK_WAIT_ON_SEND_STRING("----------------------------------\n");
+        } // end if sw2 double pressed
         
         ESOS_TASK_YIELD();
     } // end while loop
     ESOS_TASK_END();
 }
+
+// ESOS tast to handle temperature messages - requests or incoming data?
 
 /****************************************************
  *  user_init()
