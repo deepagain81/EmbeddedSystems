@@ -34,28 +34,11 @@
 #include    "esos_pic24.h"
 #include    "esos_ecan.h"
 #include    "embedded_lab_CANLab.h"
+#include    "esos_f14ui.h"
 
 // Defines
-#define TRUE            1
-#define FALSE           0
-
-#define CONFIG_LED1()   CONFIG_RF4_AS_DIG_OUTPUT()
-#define CONFIG_LED2()   CONFIG_RB14_AS_DIG_OUTPUT()
-#define CONFIG_LED3()   CONFIG_RB15_AS_DIG_OUTPUT()
-#define LED1            _LATF4
-#define LED2            _LATB14
-#define LED3            _LATB15
-
-#define CONFIG_SW1()    {   CONFIG_RB13_AS_DIG_INPUT(); \
-                            ENABLE_RB13_PULLUP(); \
-                            DELAY_US( 1 ); \
-                        }
-#define CONFIG_SW2()    {   CONFIG_RB12_AS_DIG_INPUT(); \
-                            ENABLE_RB12_PULLUP(); \
-                            DELAY_US( 1 ); \
-                        }
-#define SW1             _RB13
-#define SW2             _RB12
+#define USR_ECAN_BEACON_INTERVAL            ( 10*1000) /*should be 30  seconds*/
+#define USR_ECAN_BEACON_TIMEOUT_INTERVAL    ( 30*1000) /*should be 120 seconds*/
 
 // Prototypes
 
@@ -66,43 +49,123 @@
  ************************************************************************
  */
 
-/*
- * An ESOS task to mimic the heartbeat LED found
- * in the PIC24 support library code used in Chapters 8-13.
- *
- * Toggle LED3, wait 250ms, repeat forever.
- *
- * \hideinitializer
- */
-ESOS_USER_TASK ( heartbeat_LED ) {
-    ESOS_TASK_BEGIN();
-    while (TRUE) {
-        LED3 = !LED3;
-        ESOS_TASK_WAIT_TICKS( 500 );
-    }
-    ESOS_TASK_END();
-}
-
 ESOS_USER_TASK ( test_message_type_sending ) {
-    static uint8_t buf[2];
-    static uint16_t can_message_id; // should encompass the destination board Team, member, and the message type
+    static uint8_t buf[8];
+    static uint16_t u16_sending_can_message_id; // should encompass the destination board Team, member, and the message type
+    static uint16_t u16_test_msg_types;
     
     ESOS_TASK_BEGIN();
+    esos_uiF14_flashLED3(1000);
+    ESOS_TASK_WAIT_TICKS( 100 ); // delay for proper TEXT startup
+    u16_test_msg_types = 0;
     
-    while ( TRUE ) {
+    while ( 1 ) {
         buf[0] = !SW1;
         buf[1] = !SW2;
+        buf[2] = buf[0];
+        buf[3] = buf[1];
+        buf[4] = buf[0];
+        buf[5] = buf[1];
+        buf[6] = buf[0];
+        buf[7] = buf[1];
         
         LED1 = buf[0];
         LED2 = buf[1];
 
-        can_message_id = calcMsgID(MY_ID) | CANMSG_TYPE_LEDS;
+        u16_sending_can_message_id = calcMsgID(MY_ID) | u16_test_msg_types; // CANMSG_TYPE_LEDS
+        u16_test_msg_types = (u16_test_msg_types + 1) % 10;
         
-        ESOS_ECAN_SEND( can_message_id, buf, 2 );    //CAN_id, msg, msg_len
+        ESOS_ECAN_SEND( u16_sending_can_message_id, buf, 8 );    //CAN_id, msg, msg_len
           ESOS_TASK_WAIT_ON_SEND_STRING("SENT\n");
         ESOS_TASK_WAIT_TICKS( 500 );
     }
     
+    ESOS_TASK_END();
+}
+
+ESOS_USER_TASK ( transmit_beacon ) {
+    static uint16_t u16_sending_can_message_id; // should encompass the destination board Team, member, and the message type
+    uint8_t buf = 0;
+
+    ESOS_TASK_BEGIN();
+    while(1){
+        u16_sending_can_message_id = calcMsgID(MY_ID) | CANMSG_TYPE_BEACON; // CANMSG_TYPE_BEACON
+        buf = 0;
+        ESOS_ECAN_SEND( u16_sending_can_message_id, buf, 0 );    //CAN_id, msg, msg_len
+        ESOS_TASK_WAIT_ON_SEND_STRING("Beacon sent.\n");
+        ESOS_TASK_WAIT_TICKS(5000); // should be 30 seconds
+    }
+    ESOS_TASK_END();
+}
+
+ESOS_USER_TASK ( monitor_for_beacons ) {
+    static uint8_t buf[8] = {0};
+    static uint8_t u8_len;
+    static uint16_t u16_canID;
+
+    static uint8_t i; // for loop
+
+    // received msg derived info
+    static uint8_t  u8_received_team_id;
+    static uint8_t  u8_received_member_id;
+    static uint8_t  u8_received_message_type;
+    static uint16_t u16_received_arr_index;
+    
+    ESOS_TASK_BEGIN();
+    
+    esos_ecan_canfactory_subscribe( __pstSelf, 0x000 | CANMSG_TYPE_BEACON, 0x001f, MASKCONTROL_FIELD_NONZERO );
+    esos_uiF14_flashLED3(1000);
+    ESOS_TASK_WAIT_TICKS( 100 ); // delay for proper TEXT startup
+    
+    while ( 1 ) {
+        static MAILMESSAGE msg;
+        
+        //ESOS_TASK_WAIT_FOR_MAIL();
+        if(ESOS_TASK_IVE_GOT_MAIL()){
+            ESOS_TASK_GET_NEXT_MESSAGE( &msg );
+        // get the id and msg itself
+            u16_canID = msg.au16_Contents[0];   // this comes from frame structure
+            // interpret msgid
+            u8_received_team_id      = stripTeamID(u16_canID);
+            u8_received_member_id    = stripMemberID(u16_canID);
+            u8_received_message_type = stripTypeID(u16_canID);
+            u16_received_arr_index   = getArrayIndexFromMsgID(u16_canID);
+            // print msg id
+            ESOS_TASK_WAIT_ON_SEND_STRING("t7synth TEST\n");
+            ESOS_TASK_WAIT_ON_SEND_STRING("msg id: ");
+            ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(u16_canID);
+            ESOS_TASK_WAIT_ON_SEND_STRING(" team #");
+            ESOS_TASK_WAIT_ON_SEND_UINT8_AS_DEC_STRING(u8_received_team_id);
+            ESOS_TASK_WAIT_ON_SEND_STRING(" member #");
+            ESOS_TASK_WAIT_ON_SEND_UINT8_AS_DEC_STRING(u8_received_member_id);
+            // output member name, if in range
+            ESOS_TASK_WAIT_ON_SEND_STRING("(");
+            if(u16_received_arr_index < NUM_OF_IDS){
+                ESOS_TASK_WAIT_ON_SEND_STRING(aCANID_IDs[u16_received_arr_index].psz_name);
+                ESOS_TASK_WAIT_ON_SEND_STRING(" - ");
+                ESOS_TASK_WAIT_ON_SEND_STRING(aCANID_IDs[u16_received_arr_index].psz_netID);
+            } else {
+                ESOS_TASK_WAIT_ON_SEND_STRING("???");
+            }
+            ESOS_TASK_WAIT_ON_SEND_STRING(")");
+            // print msg type
+            ESOS_TASK_WAIT_ON_SEND_STRING(" MSG TYPE: ");
+            if(u8_received_message_type < 10){
+                ESOS_TASK_WAIT_ON_SEND_STRING(CAN_MESSAGE_TYPE_DESCRIPTION[u8_received_message_type]);
+            } else {
+                ESOS_TASK_WAIT_ON_SEND_STRING("???");
+            }
+
+            ESOS_TASK_WAIT_ON_SEND_STRING("\n***-------------------------------***\n");
+           
+            u8_len = ESOS_GET_PMSG_DATA_LENGTH((&msg)) - sizeof(uint16_t);  // 
+            ESOS_TASK_WAIT_ON_SEND_STRING("u8_len: ");
+            ESOS_TASK_WAIT_ON_SEND_UINT8_AS_DEC_STRING(u8_len);
+            ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+        }//end if
+        
+        ESOS_TASK_YIELD();
+    } // end while loop
     ESOS_TASK_END();
 }
 
@@ -111,18 +174,13 @@ ESOS_USER_TASK ( test_message_type_sending ) {
  ****************************************************
  */
 void user_init ( void ) {
-    __esos_unsafe_PutString( HELLO_MSG );
-
-    CONFIG_LED1();
-    CONFIG_LED2();
-    CONFIG_LED3();
-    CONFIG_SW1();
-    CONFIG_SW2();
-
+    config_esos_uiF14();
     __esos_ecan_hw_config_ecan(); // ECAN config
     CHANGE_MODE_ECAN1(ECAN_MODE_NORMAL);
-    
-    esos_RegisterTask( heartbeat_LED );
-    esos_RegisterTask( CANFactory );
-    esos_RegisterTask( test_message_type_sending );
+    __esos_unsafe_PutString( HELLO_MSG );
+     
+    esos_RegisterTask( CANFactory ); // from esos_ecan.c
+    esos_RegisterTask( transmit_beacon );
+    esos_RegisterTask( monitor_for_beacons );
+    //esos_RegisterTask( test_message_type_sending );
 }

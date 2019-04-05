@@ -33,6 +33,7 @@
 #include    "esos.h"
 #include    "esos_pic24.h"
 #include    "esos_ecan.h"
+#include    "esos_pic24_ecan.h"
 //#include    "esos_f14ui.h"
 
 // Defines
@@ -77,7 +78,7 @@ ESOS_USER_TASK ( ecan_receiver ) {
     
     esos_ecan_canfactory_subscribe( __pstSelf, 0x7a0, 0xffff, MASKCONTROL_FIELD_NONZERO );
     esos_uiF14_flashLED3(1000);
-    //ESOS_TASK_WAIT_ON_SEND_STRING(HELLO_MSG);
+    ESOS_TASK_WAIT_TICKS( 100 ); // delay for proper TEXT startup
     
     while ( TRUE ) {
         static MAILMESSAGE msg;
@@ -134,7 +135,7 @@ ESOS_USER_TASK ( ecan_receiver ) {
  ****************************************************
  */
 void user_init ( void ) {
-    //__esos_unsafe_PutString( HELLO_MSG );
+    __esos_unsafe_PutString( HELLO_MSG );
     //config_esos_uiF14();
 
     CONFIG_LED1();

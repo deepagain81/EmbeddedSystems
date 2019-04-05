@@ -14,85 +14,192 @@ Date  : April 03, 2019
 #include    "esos.h"
 #include    "esos_pic24.h"
 #include    "esos_ecan.h"
+#include 	"revF14.h"
 #include    "esos_f14ui.h"
+#include 	"embedded_lab_CANLab.h"
 
 // Defines
-#define CONFIG_LED1()   CONFIG_RF4_AS_DIG_OUTPUT()
-#define CONFIG_LED2()   CONFIG_RB14_AS_DIG_OUTPUT()
-#define CONFIG_LED3()   CONFIG_RB15_AS_DIG_OUTPUT()
-#define LED1            _LATF4
-#define LED2            _LATB14
-#define LED3            _LATB15
+// #define CONFIG_LED1()   CONFIG_RF4_AS_DIG_OUTPUT()
+// #define CONFIG_LED2()   CONFIG_RB14_AS_DIG_OUTPUT()
+// #define CONFIG_LED3()   CONFIG_RB15_AS_DIG_OUTPUT()
+// #define LED1            _LATF4
+// #define LED2            _LATB14
+// #define LED3            _LATB15
 
-#define CONFIG_SW1()    {   CONFIG_RB13_AS_DIG_INPUT(); \
-                            ENABLE_RB13_PULLUP(); \
-                            DELAY_US( 1 ); \
-                        }
-#define CONFIG_SW2()    {   CONFIG_RB12_AS_DIG_INPUT(); \
-                            ENABLE_RB12_PULLUP(); \
-                            DELAY_US( 1 ); \
-                        }
-#define SW1             _RB13
-#define SW2             _RB12
+// #define CONFIG_SW1()    {   CONFIG_RB13_AS_DIG_INPUT(); \
+//                             ENABLE_RB13_PULLUP(); \
+//                             DELAY_US( 1 ); \
+//                         }
+// #define CONFIG_SW2()    {   CONFIG_RB12_AS_DIG_INPUT(); \
+//                             ENABLE_RB12_PULLUP(); \
+//                             DELAY_US( 1 ); \
+//                         }
+// #define SW1             _RB13
+// #define SW2             _RB12
 
 /* ************************************************************************ */
 //Functions
+
+bool isInCharRange(char input, char lowChar, char highChar) {
+	return (input >= lowChar && input <= highChar);
+}
+
 ESOS_USER_TASK(listen_only)
 {
 	static uint8_t buf[8] = {0};
 	static uint8_t u8_len;
 	static uint16_t u16_canID;
+
+	static uint8_t i; // for loop
+
+	// received msg derived info
+	static uint8_t  u8_received_team_id;
+	static uint8_t  u8_received_member_id;
+	static uint8_t  u8_received_message_type;
+	static uint16_t u16_received_arr_index;
 	//
-	static uint16_t u16_usrInput;
+	static uint8_t u8_usrInput;
+	static char    char_input_buf[32]; // up to 16 for mask, up to 16 for filter
+	static uint8_t u8_usr_input_index;
+	static BOOL    b_hex_entry;
 
 	ESOS_TASK_BEGIN();
 
 	// Ask user whom to listen
-	u16_usrInput = inString();
+	// u16_usrInput = inString(); // should use ESOS_GET...
 
 	//must subscribe to canfactory to hear can msg.
 	esos_ecan_canfactory_subscribe(__pstSelf, 0x7a0, 0x0000, MASKCONTROL_FIELD_NONZERO);	// param--> current task(points to self), rcv_id, mask->it matches with bits, filter specification
 	esos_uiF14_flashLED3(500);
+	ESOS_TASK_WAIT_ON_SEND_STRING( HELLO_MSG );
+	//ENABLE_DEBUG_MODE();
+	b_hex_entry = 0;
+	ESOS_TASK_WAIT_TICKS( 500 ); // delay for proper TEXT startup
 
 	while(1)
 	{
 		// Make sure msg is received
 		static MAILMESSAGE msg;
-		ESOS_TASK_WAIT_FOR_MAIL();
-		ESOS_TASK_GET_NEXT_MESSAGE(&msg);
-		ESOS_TASK_WAIT_ON_SEND_STRING("GOT MAIL\n");
-		// ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(msg[0]);
-  //       ESOS_TASK_WAIT_ON_SEND_STRING(" ");
-  //       ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(msg[1]);
-  //       ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+		//ESOS_TASK_WAIT_FOR_MAIL();
+		if(ESOS_TASK_IVE_GOT_MAIL()){
+			ESOS_TASK_WAIT_FOR_MAIL();
+			ESOS_TASK_GET_NEXT_MESSAGE(&msg);
 
-        // get the id and msg itself
-        u16_canID = msg.au16_Contents[0];	// this comes from frame structure
-        ESOS_TASK_WAIT_ON_SEND_STRING("msg id: ");
-        ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(u16_canID);
-        ESOS_TASK_WAIT_ON_SEND_STRING("\n***-------------------------------***\n");
+	        // get the id and msg itself
+	        u16_canID = msg.au16_Contents[0];	// this comes from frame structure
+	        // interpret msgid
+			u8_received_team_id      = stripTeamID(u16_canID);
+			u8_received_member_id    = stripMemberID(u16_canID);
+			u8_received_message_type = stripTypeID(u16_canID);
+			u16_received_arr_index   = getArrayIndexFromMsgID(u16_canID);
+			// print msg id
+			ESOS_TASK_WAIT_ON_SEND_STRING("msg id: ");
+	        ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(u16_canID);
+	        ESOS_TASK_WAIT_ON_SEND_STRING(" team #");
+	        ESOS_TASK_WAIT_ON_SEND_UINT8_AS_DEC_STRING(u8_received_team_id);
+	        ESOS_TASK_WAIT_ON_SEND_STRING(" member #");
+	        ESOS_TASK_WAIT_ON_SEND_UINT8_AS_DEC_STRING(u8_received_member_id);
+	        // output member name, if in range
+	        ESOS_TASK_WAIT_ON_SEND_STRING("(");
+	        if(u16_received_arr_index < NUM_OF_IDS){
+	        	ESOS_TASK_WAIT_ON_SEND_STRING(aCANID_IDs[u16_received_arr_index].psz_name);
+	        	ESOS_TASK_WAIT_ON_SEND_STRING(" - ");
+	        	ESOS_TASK_WAIT_ON_SEND_STRING(aCANID_IDs[u16_received_arr_index].psz_netID);
+	        } else {
+	        	ESOS_TASK_WAIT_ON_SEND_STRING("???");
+	        }
+	        ESOS_TASK_WAIT_ON_SEND_STRING(")");
+	        // print msg type
+	        ESOS_TASK_WAIT_ON_SEND_STRING(" MSG TYPE: ");
+	        if(u8_received_message_type < 10){
+	        	ESOS_TASK_WAIT_ON_SEND_STRING(CAN_MESSAGE_TYPE_DESCRIPTION[u8_received_message_type]);
+	    	} else {
+	        	ESOS_TASK_WAIT_ON_SEND_STRING("???");
+	    	}
 
+	        ESOS_TASK_WAIT_ON_SEND_STRING("\n***-------------------------------***\n");
+	       
+	    	u8_len = ESOS_GET_PMSG_DATA_LENGTH((&msg)) - sizeof(uint16_t);	// 
+	        ESOS_TASK_WAIT_ON_SEND_STRING("u8_len: ");
+	        ESOS_TASK_WAIT_ON_SEND_UINT8_AS_DEC_STRING(u8_len);
+	        ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 
-       
-    	u8_len = ESOS_GET_PMSG_DATA_LENGTH((&msg)) - sizeof(uint16_t);	// 
-        ESOS_TASK_WAIT_ON_SEND_STRING("u8_len: ");
-        ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(u8_len);
-        ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+	        //copy that msg into memory
+	        memcpy(buf, &msg.au8_Contents[sizeof(uint16_t)], u8_len);	// param--> varName, msg itself(start point), len of msg to store
+	        //print data from the msg
+	        for(i = 0; i<8; i++){
+	        	ESOS_TASK_WAIT_ON_SEND_STRING("Buf[");
+	        	ESOS_TASK_WAIT_ON_SEND_UINT8_AS_DEC_STRING(i);
+	        	ESOS_TASK_WAIT_ON_SEND_STRING("] : ");
+	        	ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(buf[i]);
+	        	ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+	        }
+	        ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 
-        //copy that msg into memory
-        memcpy(buf, &msg.au8_Contents[sizeof(uint16_t)], u8_len);	// param--> varName, msg itself(start point), len of msg to store
-        //print msg to check we got right msg
-        ESOS_TASK_WAIT_ON_SEND_STRING("Buf[0]:");
-        ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(buf[0]);
-        ESOS_TASK_WAIT_ON_SEND_STRING("\nBuf[1]: ");
-        ESOS_TASK_WAIT_ON_SEND_UINT8_AS_HEX_STRING(buf[1]);
-        ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+	        //code for "What to do once we receive msg goes here"
+    	} // end if_task_has_mail
 
-        //code for "What to do once we receive msg goes here"
+	    // check keyboard input
+	    if(IS_ESOS_COMM_GOT_IN_DATA()){
+	    	ESOS_TASK_WAIT_ON_GET_UINT8(u8_usrInput);
+	    	ESOS_TASK_WAIT_ON_SEND_STRING("Enter the new mask and filter values ( 3 bit team id | 3 bit team member | 5 bit msg type):\n");
+	    	b_hex_entry = (u8_usrInput == 'x' | u8_usrInput == 'X');
+	    	if(!b_hex_entry){ // default to binary
+	    		ESOS_TASK_WAIT_ON_SEND_STRING("Mask:   bbb bbb bbbbb   Filter:   bbb bbb bbbbb\n");
+	    		ESOS_TASK_WAIT_ON_SEND_STRING("        ");
+	    	} else { // entering hex
+	    		ESOS_TASK_WAIT_ON_SEND_STRING("Mask: 0xXXX             Filter: 0xXXX\n");
+	    		ESOS_TASK_WAIT_ON_SEND_STRING("        ");
+	    	}
+	    	u8_usr_input_index = 0;
+	    	while(1){
+	    		// get input char
+	    		ESOS_TASK_WAIT_ON_GET_UINT8(u8_usrInput);
+	    		if(!b_hex_entry && isInCharRange(u8_usrInput, '0', '1')){ // binary input (default)
+	    			// echo char and process
+	    			ESOS_TASK_WAIT_ON_SEND_UINT8(u8_usrInput);
+	    			char_input_buf[u8_usr_input_index] = u8_usrInput;
+	    			u8_usr_input_index++;
+	    			// space out the entries
+	    			if(u8_usr_input_index == 3 | u8_usr_input_index == 6 | u8_usr_input_index == 14 | u8_usr_input_index == 17){ // space out the entries
+	    				ESOS_TASK_WAIT_ON_SEND_STRING(" ");
+	    			} else if (u8_usr_input_index == 11) {// larger space between entries
+	    				ESOS_TASK_WAIT_ON_SEND_STRING("             ");
+	    			}
+	    		} else if(b_hex_entry && (isInCharRange(u8_usrInput, '0', '9') | isInCharRange(u8_usrInput, 'a', 'f') | isInCharRange(u8_usrInput, 'A', 'F'))){
+	    			// echo char and process
+	    			ESOS_TASK_WAIT_ON_SEND_UINT8(u8_usrInput);
+	    			char_input_buf[u8_usr_input_index] = u8_usrInput;
+	    			u8_usr_input_index++;
+	    			// space out the entries
+	    			if(u8_usr_input_index == 3){
+	    				ESOS_TASK_WAIT_ON_SEND_STRING("                       ");
+	    			}
+	    	 	}
 
-        
-
-
+	    		// should we stop the loop
+	    		if(( !b_hex_entry && u8_usr_input_index >= 22)){
+	    			// take our input and conver to mask and filter numbers
+	    			ESOS_TASK_WAIT_ON_SEND_STRING("\nEnded in binary entry. Input: ");
+	    			char_input_buf[u8_usr_input_index] = '\0';
+	    			ESOS_TASK_WAIT_ON_SEND_STRING(char_input_buf);
+	    			ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+	    			ESOS_TASK_FLUSH_TASK_MAILBOX(__pstSelf);
+	    			break;
+	    		}
+	    		else if(( b_hex_entry && u8_usr_input_index >= 6)){
+	    			// take our input and conver to mask and filter numbers
+	    			ESOS_TASK_WAIT_ON_SEND_STRING("\nEnded in hex entry. Input: ");
+	    			char_input_buf[u8_usr_input_index] = '\0';
+	    			ESOS_TASK_WAIT_ON_SEND_STRING(char_input_buf);
+	    			ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+	    			ESOS_TASK_FLUSH_TASK_MAILBOX(__pstSelf);
+	    			break;
+	    		}
+	    		FLUSH_ESOS_COMM_IN_DATA();
+	    		ESOS_TASK_YIELD();
+	    	} // end while in menu mode
+	    } // end if(key pressed) to start entry mode
         ESOS_TASK_YIELD();
 	}//end while
 	ESOS_TASK_END();
@@ -101,15 +208,11 @@ ESOS_USER_TASK(listen_only)
 
 void user_init(void)
 {
-	CONFIG_LED1();
-    CONFIG_LED2();
-    CONFIG_LED3();
-    CONFIG_SW1();
-    CONFIG_SW2();
+	//__esos_unsafe_PutString( HELLO_MSG );
 
     __esos_ecan_hw_config_ecan(); // ECAN config
     config_esos_uiF14();		// hw config
-    CHANGE_MODE_ECAN1(ECAN_MODE_LISTEN_ONLY);
+    CHANGE_MODE_ECAN1(ECAN_MODE_LISTEN_ONLY); // ECAN_LISTEN_ALL_MESSAGES  ECAN_MODE_LISTEN_ONLY
 
     //esos_RegisterTask( heartbeat_LED );
     esos_RegisterTask( CANFactory );

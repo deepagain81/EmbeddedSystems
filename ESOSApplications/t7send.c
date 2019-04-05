@@ -86,6 +86,8 @@ ESOS_USER_TASK ( ecan_sender ) {
     uint8_t buf[2];
     
     ESOS_TASK_BEGIN();
+
+    ESOS_TASK_WAIT_TICKS( 100 ); // delay for proper TEXT startup
     
     while ( TRUE ) {
         buf[0] = !SW1;
@@ -96,7 +98,7 @@ ESOS_USER_TASK ( ecan_sender ) {
         
         ESOS_ECAN_SEND( 0x7a0, buf, 2 );    //CAN_id, msg, msg_len
           ESOS_TASK_WAIT_ON_SEND_STRING("SENT\n");
-        ESOS_TASK_WAIT_TICKS( 500 );
+        ESOS_TASK_WAIT_TICKS( 300 );
     }
     
     ESOS_TASK_END();

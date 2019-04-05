@@ -11,7 +11,7 @@
 #include "esos_lcd44780.h"
 #include "DAC_comms.h"
 #include "esos_sensor.h"
-#include "I2C_comms.h"
+//#include "I2C_comms.h"
 
 #include <stdint.h> // for uint64_t
 // Array for waveforms
@@ -23,9 +23,11 @@
 //volatile uint8_t u8_per, u8_amp;	// variables
 //volatile uint16_t u16_per;
 
+// sine and sqr are length 128 arrays
+
 const uint8_t au8_sinetbl[] = {127,133,139,146,152,158,164,170,176,181,187,192,198,203,208,212,217,221,225,229,233,236,239,242,244,247,249,250,252,253,253,254,254,254,253,253,252,250,249,247,244,242,239,236,233,229,225,221,217,212,208,203,198,192,187,181,176,170,164,158,152,146,139,133,127,121,115,108,102,96,90,84,78,73,67,62,56,51,46,42,37,33,29,25,21,18,15,12,10,7,5,4,2,254,254,0,0,0,254,254,2,4,5,7,10,12,15,18,21,25,29,33,37,42,46,51,56,62,67,73,78,84,90,96,102,108,115,121};
-const uint8_t au8_sqrtbl[] = {254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-const uint8_t au8_tritbl[] = {0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100,104,108,112,116,120,124,128,132,136,140,144,148,152,156,160,164,168,172,176,180,184,188,192,196,200,204,208,212,216,220,224,228,232,236,240,244,248,252,254,252,248,244,240,236,232,228,224,220,216,212,208,204,200,196,192,188,184,180,176,172,168,164,160,156,152,148,144,140,136,132,128,124,120,116,112,108,104,100,96,92,88,84,80,76,72,68,64,60,56,52,48,44,40,36,32,28,24,20,16,12,8,4,0};
+const uint8_t au8_sqrtbl[]  = {254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+const uint8_t au8_tritbl[]  = {0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100,104,108,112,116,120,124,128,132,136,140,144,148,152,156,160,164,168,172,176,180,184,188,192,196,200,204,208,212,216,220,224,228,232,236,240,244,248,252,254,252,248,244,240,236,232,228,224,220,216,212,208,204,200,196,192,188,184,180,176,172,168,164,160,156,152,148,144,140,136,132,128,124,120,116,112,108,104,100,96,92,88,84,80,76,72,68,64,60,56,52,48,44,40,36,32,28,24,20,16,12,8,4,0};
 const uint8_t au8_usr1tbl[] = {64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,127,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 uint16_t u16_sensor_millivolts;
@@ -248,6 +250,7 @@ ESOS_USER_TASK( fcn_synth ) {
 			//Display waveform menu until sw3 pressed
 			esos_lcd44780_clearScreen();
 			ESOS_TASK_WAIT_ESOS_MENU_LONGMENU(menu_setWvform);
+			//printf("setWvform.u8_choice: %d\n",menu_setWvform.u8_choice);
 
 			// Inside the wvform menu, has another menu
 			if (menu_setWvform.u8_choice < 0)// at least one option
@@ -421,40 +424,47 @@ void configTimer2(void){
 	//_T2IE = 1; 		// Enable
 	ESOS_MARK_PIC24_USER_INTERRUPT_SERVICED(ESOS_IRQ_PIC24_T2); // pg 625
 
-	ESOS_REGISTER_PIC24_USER_INTERRUPT( ESOS_IRQ_PIC24_INT1, ESOS_USER_IRQ_LEVEL1, _T2Interrupt);
-  	ESOS_ENABLE_PIC24_USER_INTERRUPT(ESOS_IRQ_PIC24_INT1);
+	ESOS_REGISTER_PIC24_USER_INTERRUPT( ESOS_IRQ_PIC24_T2, ESOS_USER_IRQ_LEVEL1, _T2Interrupt);
+  	ESOS_ENABLE_PIC24_USER_INTERRUPT(ESOS_IRQ_PIC24_T2);
 	T2CONbits.TON = 1;		// turn on the timer
 	printf("End of configTimer2(). Returning to ESOS...");
 }//end timer config
 
 //Interrupt service ( DAC comes here, i guess)
 //void _ISR_T2Interrupt(void){
-ESOS_USER_INTERRUPT( ESOS_IRQ_PIC24_INT1 ) { // ESOS_IRQ_PIC24_T2
-	// get variables
+ESOS_USER_INTERRUPT( ESOS_IRQ_PIC24_T2 ) { // ESOS_IRQ_PIC24_T2
+	// get variablesESOS_IRQ_PIC24_T2
 	//esos_uiF14_turnLED1On();
-	printf("Hi\n");
+	//printf("Hi\n");
 	u16_volt_scale = ampltd.entries[0].value;
 	if(menu_setWvform.u8_choice == 0){ //tri, sine, square, usr1
 		u8_wav_val = au8_tritbl[u16_DAC_wave_out_index];
-	} else if(menu_setWvform.u8_choice == 1) { // sine
+		//printf("tri - ");
+	} else if(menu_setWvform.u8_choice == 1)  { // sine
 		u8_wav_val = au8_sinetbl[u16_DAC_wave_out_index];
-	} else if(menu_setWvform.u8_choice == 2) { // square
+		//printf("sin - ");
+	} else if(menu_setWvform.u8_choice == 2)  { // square
 		u8_wav_val = au8_sqrtbl[u16_DAC_wave_out_index];
+		//printf("sqr - ");
 	}  else if(menu_setWvform.u8_choice == 3) { // usr1
 		u8_wav_val = au8_usr1tbl[u16_DAC_wave_out_index];
+		//printf("usr1- ");
 	} else {
 		u8_wav_val = 0x7F; // default to DC of half the max if there is a problem
 	}
 	//write to DAC
 		// amplitude scaled value of the array - double length at least
-		u32_scaled_DAC_value = ((uint32_t)u8_wav_val * (uint32_t)u16_volt_scale * 16 / 33) + 
-		                       ((uint32_t)u8_wav_val * (uint32_t)u16_volt_scale * 15/33 / 255); // max of 0xFFF, min of 0x000
+		// u32_scaled_DAC_value = ((uint32_t)u8_wav_val * (uint32_t)u16_volt_scale * (uint32_t)16 / (uint32_t)33) + 
+		//                        ((uint32_t)u8_wav_val * (uint32_t)u16_volt_scale * (uint32_t)15/(uint32_t)33 / (uint32_t)255); // max of 0xFFF, min of 0x000
+		u32_scaled_DAC_value = (uint32_t)u8_wav_val * (uint32_t)u16_volt_scale;
+		u32_scaled_DAC_value = u32_scaled_DAC_value << 6;
+		u32_scaled_DAC_value = u32_scaled_DAC_value / ((uint32_t)255*33*2*2*2*2*2*2);
 		// send value to DACA
-		printf("Preparing to setDACA inside interrupt...\n");
+		//printf("Preparing to setDACA inside interrupt...\n");
 		setDACA((uint16_t)u32_scaled_DAC_value);
-		printf("scaled DAC: %d\n", u32_scaled_DAC_value);
+		//printf("wav_val: %d, scaled DAC: 0x%08lX index:%d, \n", u8_wav_val, u32_scaled_DAC_value, u16_DAC_wave_out_index);
 	//increment index of array
-	u16_DAC_wave_out_index++;
+	u16_DAC_wave_out_index = (u16_DAC_wave_out_index + 1)%128; // arrays are 128 elements
 	//WAVEOUT = !WAVEOUT;
 	_T2IF = 0;	// clear interrupt flag
 }
@@ -467,9 +477,5 @@ void user_init(){
 	esos_RegisterTask(read_1631_task); // not completed yet
 	esos_RegisterTask(set_LEDs_task);
 
-	
 	configTimer2();
-	//esos_RegisterTask(flash_led);
-	//esos_RegisterTimer(heartbeat_LED, 500);
-	//esos_RegisterTask(get_temperature);
 }

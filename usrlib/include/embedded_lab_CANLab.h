@@ -32,6 +32,19 @@ typedef struct
 #define CANMSG_TYPE_DUTYCYCLE      8
 #define CANMSG_TYPE_LEDS           9
 
+const char* CAN_MESSAGE_TYPE_DESCRIPTION[10] = {
+	"CANMSG_TYPE_POLL",           //0
+	"CANMSG_TYPE_BEACON",         //1
+	"CANMSG_TYPE_TEMPERATURE1",   //2
+	"CANMSG_TYPE_TEMPERATURE2",   //3
+	"CANMSG_TYPE_WAVEFORM",       //4
+	"CANMSG_TYPE_POTENTIOMETER",  //5
+	"CANMSG_TYPE_FREQUENCY",      //6
+	"CANMSG_TYPE_AMPLITUDE",      //7
+	"CANMSG_TYPE_DUTYCYCLE",      //8
+	"CANMSG_TYPE_LEDS",           //9
+};
+
 // CAN ID Table
 const CAN_ID aCANID_IDs[NUM_OF_IDS] = {
 //"Name",         "netID",    teamID,    memberID,   // Array Index
@@ -63,7 +76,7 @@ const CAN_ID aCANID_IDs[NUM_OF_IDS] = {
  {"V Marojevic",  "Vuk",     7,         7 }         // 21
 };
 
-#define MY_ID             18 // Look above for your array index
+#define MY_ID             15 // Look above for your array index
 #define MY_NAME           (aCANID_IDs[MY_ID].psz_name)
 #define MY_NETID          (aCANID_IDs[MY_ID].psz_netID)
 #define MY_TEAM_ID        (aCANID_IDs[MY_ID].u8_teamID)
