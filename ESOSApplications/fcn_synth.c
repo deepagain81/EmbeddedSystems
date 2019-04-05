@@ -219,33 +219,39 @@ static esos_menu_entry_t ledfp = {
 
 // LCD 
 ESOS_USER_TASK( fcn_synth ) {
-	static u8_d1;
-	static u8_d2;
+	static u8_temperture_data[2];
 	ESOS_TASK_BEGIN();
 	u16_DAC_wave_out_index = 0; // initilize to the first index of the wave
 	//setDACA(0x3FF);
 	shutdownDACA();
 	shutdownDACB();
-	setDACA( 0x513 ); // proves that DACA works
-	setDACB( 0x0FF ); // proves that DACB works
+	//setDACA( 0x513 ); // proves that DACA works
+	//setDACB( 0x0FF ); // proves that DACB works
 	// startI2C();
 	// write1_I2C(0b10010000, 0x51); // initiate conversion
 	ESOS_TASK_WAIT_ON_WRITE1I2C1(0b10010000, 0x51); // initiate conversion
 	// stopI2C();
-	ESOS_TASK_WAIT_TICKS(1000); // wait for temperture to be measured
-	// startI2C();
-	// write1_I2C(0b10010000, 0xAA); // read temperature
-		//ESOS_TASK_WAIT_ON_WRITE1I2C1( 0b10010000, 0xAA ); // read temperature
-		//ESOS_TASK_WAIT_ON_READ2I2C1( 0b10010000, u8_d1, u8_d2 );
-	// read temp data
-	
+	// while(1){
+	// 	ESOS_TASK_WAIT_TICKS(750); // wait for temperture to be measured
+	// 	// startI2C();
+	// 	// write1_I2C(0b10010000, 0xAA); // read temperature
+	// 		//ESOS_TASK_WAIT_ON_WRITE1I2C1( 0b10010000, 0xAA ); // read temperature
+	// 		//ESOS_TASK_WAIT_ON_READ2I2C1( 0b10010000, u8_d1, u8_d2 );
+	// 	// read temp data
+	// 	__PIC24_I2C1_START();
+	// 	__PIC24_I2C1_PUT(0b10010000); // device address + W(0)
+	// 	__PIC24_I2C1_PUT(0xAA); // address the temperature
+	// 	//__PIC24_I2C1_RSTART();
+	// 	//__PIC24_I2C1_PUT(0b10010001); // device address + Read(1)
+	// 	ESOS_TASK_WAIT_ON_READNI2C1( 0b10010001, u8_temperture_data, 2 );
 
-	u16_I2C_temp = ((uint16_t)u8_d1 << 8) | u8_d2;
-	// rstartI2C();
-	// u16_I2C_temp =  (uint16_t)readI2C(true) << 8;
-	// u16_I2C_temp += (uint16_t)readI2C(false);
-	// stopI2C();
-	printf("I2C read from temperature: %d\n",u16_I2C_temp);
+	// 	u16_I2C_temp = ((uint16_t)u8_temperture_data[0] << 8) | u8_temperture_data[1];
+	// 	// rstartI2C();
+	// 	// u16_I2C_temp =  (uint16_t)readI2C(true) << 8;
+	// 	// u16_I2C_temp += (uint16_t)readI2C(false);
+	// 	// stopI2C();
+	// 	printf("I2C read from temperature: 0x%X\n",u16_I2C_temp);
+	// }
 	//configTimer2(); // output to DAC
 	while(TRUE){
 		//printf("Beginning of fcn_synth loop...\n");
