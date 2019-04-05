@@ -18,6 +18,8 @@
 // Array for waveforms
 #include "stdio.h"
 
+#define TEMPERATURE_SENSOR_I2C_CONVERSION_TIME (750) // ms
+
 //void configDAC(void);
 //void writeDAC(uint16_t u16_x, uint16_t u16_y);
 
@@ -219,7 +221,7 @@ static esos_menu_entry_t ledfp = {
 
 // LCD 
 ESOS_USER_TASK( fcn_synth ) {
-	static u8_temperture_data[2];
+	//static u8_temperture_data[2];
 	ESOS_TASK_BEGIN();
 	u16_DAC_wave_out_index = 0; // initilize to the first index of the wave
 	//setDACA(0x3FF);
@@ -229,7 +231,7 @@ ESOS_USER_TASK( fcn_synth ) {
 	//setDACB( 0x0FF ); // proves that DACB works
 	// startI2C();
 	// write1_I2C(0b10010000, 0x51); // initiate conversion
-	ESOS_TASK_WAIT_ON_WRITE1I2C1(0b10010000, 0x51); // initiate conversion
+	//ESOS_TASK_WAIT_ON_WRITE1I2C1(0b10010000, 0x51); // initiate conversion
 	// stopI2C();
 	// while(1){
 	// 	ESOS_TASK_WAIT_TICKS(750); // wait for temperture to be measured
@@ -371,14 +373,51 @@ ESOS_USER_TASK( read_LM60_task ) {
 
 ESOS_USER_TASK( read_1631_task ) {
 	ESOS_TASK_BEGIN();
+	static uint16_t u16_temperture_1631;
+	static u8_temperture_data[2];
+	static uint32_t timer_base_last_temperture_check;
+
+	ESOS_TASK_WAIT_ON_AVAILABLE_I2C();
+	ESOS_TASK_WAIT_ON_WRITE1I2C1(0b10010000, 0x51); // initiate conversion
+	ESOS_TASK_SIGNAL_AVAILABLE_I2C();
+	u16_temperture_1631 = 0;
+	timer_base_last_temperture_check = esos_GetSystemTick();
+
 	while(true){
+		// update menu display if neccessary
 		if(my_menu.u8_choice != 5){
 			// do nothing
 		} else {
 			// read the sensor
-			read_1631.dynamic_data = -1;
+			read_1631.dynamic_data = (int32_t)((u16_temperture_1631 & 0b0111111111111111) >> 8) | ((u16_temperture_1631 & 0b1000000000000000)); // was -1
 		}
-		ESOS_TASK_WAIT_TICKS(10);
+
+		// check for a new value if neccessary
+		if(esos_GetSystemTick() >= timer_base_last_temperture_check + TEMPERATURE_SENSOR_I2C_CONVERSION_TIME){
+			// time for a new check
+			//ESOS_TASK_WAIT_ON_SEND_STRING("making new I2C reading...\n");
+			ESOS_TASK_WAIT_ON_AVAILABLE_I2C();
+			__PIC24_I2C1_START();
+			__PIC24_I2C1_PUT(0b10010000); // device address + W(0)
+			__PIC24_I2C1_PUT(0xAA); // address the temperature
+			ESOS_TASK_WAIT_ON_READNI2C1( 0b10010001, u8_temperture_data, 2 );
+			ESOS_TASK_SIGNAL_AVAILABLE_I2C();
+			// update the timer
+			timer_base_last_temperture_check = esos_GetSystemTick();
+			// check data is valid, and output
+				
+			u16_temperture_1631 = ((uint16_t)u8_temperture_data[0] << 8) | u8_temperture_data[1];
+			if(u16_temperture_1631 == 0xFF00){
+				u16_temperture_1631 = 0x7F; // missing sensor
+			} else if(u16_temperture_1631 == 0xC400){ // restart the conversion
+				ESOS_TASK_WAIT_ON_AVAILABLE_I2C();
+				ESOS_TASK_WAIT_ON_WRITE1I2C1(0b10010000, 0x51); // initiate conversion
+				ESOS_TASK_SIGNAL_AVAILABLE_I2C();
+			}
+			printf("I2C read is 0x%X\n",u16_temperture_1631);
+		}
+
+		ESOS_TASK_YIELD();
 	}
 	ESOS_TASK_END();
 }
