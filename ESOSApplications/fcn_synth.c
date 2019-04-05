@@ -12,6 +12,7 @@
 #include "DAC_comms.h"
 #include "esos_sensor.h"
 //#include "I2C_comms.h"
+#include "esos_pic24_i2c.h"
 
 #include <stdint.h> // for uint64_t
 // Array for waveforms
@@ -218,6 +219,8 @@ static esos_menu_entry_t ledfp = {
 
 // LCD 
 ESOS_USER_TASK( fcn_synth ) {
+	static u8_d1;
+	static u8_d2;
 	ESOS_TASK_BEGIN();
 	u16_DAC_wave_out_index = 0; // initilize to the first index of the wave
 	//setDACA(0x3FF);
@@ -225,16 +228,20 @@ ESOS_USER_TASK( fcn_synth ) {
 	shutdownDACB();
 	setDACA( 0x513 ); // proves that DACA works
 	setDACB( 0x0FF ); // proves that DACB works
-	startI2C();
-	write1_I2C(0b10010000, 0x51); // initiate conversion
-	stopI2C();
+	// startI2C();
+	// write1_I2C(0b10010000, 0x51); // initiate conversion
+	ESOS_TASK_WAIT_ON_WRITE1I2C1(0b10010000, 0x51); // initiate conversion
+	// stopI2C();
 	ESOS_TASK_WAIT_TICKS(1000);
-	startI2C();
-	write1_I2C(0b10010000, 0xAA); // read temperature
-	rstartI2C();
-	u16_I2C_temp =  (uint16_t)readI2C(true) << 8;
-	u16_I2C_temp += (uint16_t)readI2C(false);
-	stopI2C();
+	// startI2C();
+	// write1_I2C(0b10010000, 0xAA); // read temperature
+	ESOS_TASK_WAIT_ON_WRITE1I2C1( 0b10010000, 0xAA ); // read temperature
+	ESOS_TASK_WAIT_ON_READ2I2C1( 0b10010000, u8_d1, u8_d2 );
+	u16_I2C_temp = ((uint16_t)u8_d1 << 8) | u8_d2;
+	// rstartI2C();
+	// u16_I2C_temp =  (uint16_t)readI2C(true) << 8;
+	// u16_I2C_temp += (uint16_t)readI2C(false);
+	// stopI2C();
 	printf("I2C read from temperature: %d\n",u16_I2C_temp);
 	//configTimer2(); // output to DAC
 	while(TRUE){
@@ -477,5 +484,6 @@ void user_init(){
 	esos_RegisterTask(read_1631_task); // not completed yet
 	esos_RegisterTask(set_LEDs_task);
 
+	esos_pic24_configI2C1(400); // 400kbits/sec is standard speed, 100kbits is slower
 	configTimer2();
 }
