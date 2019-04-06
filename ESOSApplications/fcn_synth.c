@@ -56,9 +56,9 @@ void configTimer2(void);
 
 // Timer2 configuration
 // 8 =  variable
-#define ISP_PERIOD	(8)	// actually 7.8 ms
-#define WAITING_FOR_FALLING_EDGE  ESOS_USER_FLAG_0
-#define CAPTURED_FLAG             ESOS_USER_FLAG_1
+// #define ISP_PERIOD	(8)	// actually 7.8 ms
+// #define WAITING_FOR_FALLING_EDGE  ESOS_USER_FLAG_0
+// #define CAPTURED_FLAG             ESOS_USER_FLAG_1
 
 
 /*TODO: Ctrl+F replace all instances of mm with a name that abides
