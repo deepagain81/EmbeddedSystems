@@ -185,6 +185,8 @@ ESOS_USER_TASK(listen_only)
 	    			ESOS_TASK_WAIT_ON_SEND_STRING(char_input_buf);
 	    			ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 	    			ESOS_TASK_FLUSH_TASK_MAILBOX(__pstSelf);
+	    			// do appropriate conversion here
+
 	    			break;
 	    		}
 	    		else if(( b_hex_entry && u8_usr_input_index >= 6)){
@@ -194,6 +196,8 @@ ESOS_USER_TASK(listen_only)
 	    			ESOS_TASK_WAIT_ON_SEND_STRING(char_input_buf);
 	    			ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 	    			ESOS_TASK_FLUSH_TASK_MAILBOX(__pstSelf);
+	    			// do appropriate conversion here
+	    			
 	    			break;
 	    		}
 	    		FLUSH_ESOS_COMM_IN_DATA();

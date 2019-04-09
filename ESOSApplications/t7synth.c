@@ -315,7 +315,17 @@ ESOS_USER_TASK( fcn_synth ) {
 
 ESOS_USER_TASK( read_LM60_task ) {
     ESOS_TASK_BEGIN();
+    static uint16_t u16_canID;
+    // received msg derived info
+    static uint8_t  u8_received_team_id;
+    static uint8_t  u8_received_member_id;
+    static uint8_t  u8_received_message_type;
+    static uint16_t u16_received_arr_index;
+
+    esos_ecan_canfactory_subscribe( __pstSelf, (MY_ID) | CANMSG_TYPE_TEMPERATURE1, 0x07ff, MASKCONTROL_FIELD_NONZERO );
     while(true){
+        static MAILMESSAGE msg;
+
         if(my_menu.u8_choice != 4){
             // do nothing
         } else {
@@ -327,6 +337,20 @@ ESOS_USER_TASK( read_LM60_task ) {
             u16_sensor_millivolts /= 3;
             read_LM60.dynamic_data = 100000 * ((int32_t)u16_sensor_millivolts - 424) / 625 / 1000; // removed decimal places
         }
+
+        // if(ESOS_TASK_IVE_GOT_MAIL()){
+        //     ESOS_TASK_GET_NEXT_MESSAGE( &msg );
+        // // get the id and msg itself
+        //     u16_canID = msg.au16_Contents[0];   // this comes from frame structure
+        //     // interpret msgid
+        //     u8_received_team_id      = stripTeamID(u16_canID);
+        //     u8_received_member_id    = stripMemberID(u16_canID);
+        //     u8_received_message_type = stripTypeID(u16_canID);
+        //     u16_received_arr_index   = getArrayIndexFromMsgID(u16_canID);
+
+        //     if()
+        // }
+
         ESOS_TASK_WAIT_TICKS(10);
     }
     ESOS_TASK_END();
@@ -337,6 +361,8 @@ ESOS_USER_TASK( read_1631_task ) {
     static uint16_t u16_temperture_1631;
     static u8_temperture_data[2];
     static uint32_t timer_base_last_temperture_check;
+
+
 
     ESOS_TASK_WAIT_ON_AVAILABLE_I2C();
     ESOS_TASK_WAIT_ON_WRITE1I2C1(0b10010000, 0x51); // initiate conversion
@@ -378,7 +404,7 @@ ESOS_USER_TASK( read_1631_task ) {
             //printf("I2C read is 0x%X\n",u16_temperture_1631);
         }
 
-        
+
 
         ESOS_TASK_YIELD();
     }
