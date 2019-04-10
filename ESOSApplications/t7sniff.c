@@ -19,30 +19,13 @@ Date  : April 03, 2019
 #include 	"embedded_lab_CANLab.h"
 
 // Defines
-// #define CONFIG_LED1()   CONFIG_RF4_AS_DIG_OUTPUT()
-// #define CONFIG_LED2()   CONFIG_RB14_AS_DIG_OUTPUT()
-// #define CONFIG_LED3()   CONFIG_RB15_AS_DIG_OUTPUT()
-// #define LED1            _LATF4
-// #define LED2            _LATB14
-// #define LED3            _LATB15
 
-// #define CONFIG_SW1()    {   CONFIG_RB13_AS_DIG_INPUT(); \
-//                             ENABLE_RB13_PULLUP(); \
-//                             DELAY_US( 1 ); \
-//                         }
-// #define CONFIG_SW2()    {   CONFIG_RB12_AS_DIG_INPUT(); \
-//                             ENABLE_RB12_PULLUP(); \
-//                             DELAY_US( 1 ); \
-//                         }
-// #define SW1             _RB13
-// #define SW2             _RB12
-
-/* ************************************************************************ */
 //Functions
 
-bool isInCharRange(char input, char lowChar, char highChar) {
-	return (input >= lowChar && input <= highChar);
-}
+uint32_t arrToUnsignedNumber(char *arr, uint16_t length, uint16_t base);
+int charToHexValue(char c_input);
+int power(int base, unsigned int exp);
+bool isInCharRange(char input, char lowChar, char highChar);
 
 ESOS_USER_TASK(listen_only)
 {
@@ -63,13 +46,23 @@ ESOS_USER_TASK(listen_only)
 	static uint8_t u8_usr_input_index;
 	static BOOL    b_hex_entry;
 
+	static uint32_t new_filter = 0x7a0;
+	static uint32_t new_mask   = 0x0000;
+
 	ESOS_TASK_BEGIN();
 
 	// Ask user whom to listen
 	// u16_usrInput = inString(); // should use ESOS_GET...
 
 	//must subscribe to canfactory to hear can msg.
-	esos_ecan_canfactory_subscribe(__pstSelf, 0x7a0, 0x0000, MASKCONTROL_FIELD_NONZERO);	// param--> current task(points to self), rcv_id, mask->it matches with bits, filter specification
+	esos_ecan_canfactory_subscribe(__pstSelf, new_filter, new_mask, MASKCONTROL_FIELD_NONZERO);	// param--> current task(points to self), rcv_id, mask->it matches with bits, filter specification
+	
+		ESOS_TASK_WAIT_ON_SEND_STRING("new_filter: ");
+		ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(new_filter);
+		ESOS_TASK_WAIT_ON_SEND_STRING("   new_mask: ");
+		ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(new_mask);
+		ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+
 	esos_uiF14_flashLED3(500);
 	ESOS_TASK_WAIT_ON_SEND_STRING( HELLO_MSG );
 	//ENABLE_DEBUG_MODE();
@@ -180,10 +173,22 @@ ESOS_USER_TASK(listen_only)
 	    		// should we stop the loop
 	    		if(( !b_hex_entry && u8_usr_input_index >= 22)){
 	    			// take our input and conver to mask and filter numbers
-	    			ESOS_TASK_WAIT_ON_SEND_STRING("\nEnded in binary entry. Input: ");
+	    			//ESOS_TASK_WAIT_ON_SEND_STRING("\nEnded in binary entry. Input: ");
 	    			char_input_buf[u8_usr_input_index] = '\0';
-	    			ESOS_TASK_WAIT_ON_SEND_STRING(char_input_buf);
+	    			//ESOS_TASK_WAIT_ON_SEND_STRING(char_input_buf);
 	    			ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+
+	    			esos_ecan_canfactory_unsubscribe(__pstSelf, new_filter, new_mask, MASKCONTROL_FIELD_NONZERO);
+	    			new_mask   = arrToUnsignedNumber(char_input_buf,     11, 2);
+	    			new_filter = arrToUnsignedNumber(char_input_buf+11, 11, 2);
+	    			esos_ecan_canfactory_subscribe(__pstSelf, new_filter, new_mask, MASKCONTROL_FIELD_NONZERO);
+
+	    			ESOS_TASK_WAIT_ON_SEND_STRING("new_mask: ");
+	    			ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(new_mask);
+	    			ESOS_TASK_WAIT_ON_SEND_STRING("    new_filter: ");
+	    			ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(new_filter);
+	    			ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+
 	    			ESOS_TASK_FLUSH_TASK_MAILBOX(__pstSelf);
 	    			// do appropriate conversion here
 
@@ -191,10 +196,22 @@ ESOS_USER_TASK(listen_only)
 	    		}
 	    		else if(( b_hex_entry && u8_usr_input_index >= 6)){
 	    			// take our input and conver to mask and filter numbers
-	    			ESOS_TASK_WAIT_ON_SEND_STRING("\nEnded in hex entry. Input: ");
-	    			char_input_buf[u8_usr_input_index] = '\0';
-	    			ESOS_TASK_WAIT_ON_SEND_STRING(char_input_buf);
+	    			// ESOS_TASK_WAIT_ON_SEND_STRING("\nEnded in hex entry. Input: ");
+	    			 char_input_buf[u8_usr_input_index] = '\0';
+	    			// ESOS_TASK_WAIT_ON_SEND_STRING(char_input_buf);
 	    			ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+
+	    			esos_ecan_canfactory_unsubscribe(__pstSelf, new_filter, new_mask, MASKCONTROL_FIELD_NONZERO); // must unsubscribe first to use old variable values
+	    			new_mask   = arrToUnsignedNumber(char_input_buf,     3, 16);
+	    			new_filter = arrToUnsignedNumber((char_input_buf+3), 3, 16);
+	    			esos_ecan_canfactory_subscribe(__pstSelf, new_filter, new_mask, MASKCONTROL_FIELD_NONZERO);
+
+	    			ESOS_TASK_WAIT_ON_SEND_STRING("new_mask: ");
+	    			ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(new_mask);
+	    			ESOS_TASK_WAIT_ON_SEND_STRING("    new_filter: ");
+	    			ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(new_filter);
+	    			ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+
 	    			ESOS_TASK_FLUSH_TASK_MAILBOX(__pstSelf);
 	    			// do appropriate conversion here
 	    			
@@ -222,3 +239,44 @@ void user_init(void)
     esos_RegisterTask( CANFactory );
     esos_RegisterTask( listen_only );
 }//end user_init
+
+uint32_t arrToUnsignedNumber(char *arr, uint16_t length, uint16_t base){
+	uint8_t u8_i;
+	uint32_t u32_current_base = power( base, (length-1) );
+	uint32_t u32_compounding_result = 0;
+	//printf("original base: %zu, (base = %zu)\n",u32_current_base,base);
+	
+	for(u8_i = 0; u8_i < length; u8_i++){
+		u32_compounding_result += charToHexValue(arr[u8_i]) * u32_current_base;
+		//printf(" base: %zu - ",u32_current_base);printf("compounding_result: %zu\n", u32_compounding_result);
+		u32_current_base /= base;
+	}
+
+	return u32_compounding_result;
+}
+
+int charToHexValue(char c_input){
+	uint16_t compounding_result = 0;
+	if(c_input >= '0' && c_input <= '9'){
+		compounding_result = c_input - '0';
+	} else if(c_input >= 'a' && c_input <= 'f') {
+		compounding_result = c_input - 'a' + 10;
+	} else if(c_input >= 'A' && c_input <= 'F'){
+		compounding_result = c_input - 'A' + 10;
+	} else {
+		compounding_result = -1;
+	}
+	//printf("Converting %d - %d to %d.\n", c_input, '0', compounding_result);
+	return compounding_result;
+}
+
+int power(int base, unsigned int exp) { // integer exponentiation
+    int i, result = 1;
+    for (i = 0; i < exp; i++)
+        result *= base;
+    return result;
+}
+
+bool isInCharRange(char input, char lowChar, char highChar) {
+	return (input >= lowChar && input <= highChar);
+}
