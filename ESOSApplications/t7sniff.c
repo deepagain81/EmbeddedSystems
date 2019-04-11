@@ -181,7 +181,7 @@ ESOS_USER_TASK(listen_only)
 	    			esos_ecan_canfactory_unsubscribe(__pstSelf, new_filter, new_mask, MASKCONTROL_FIELD_NONZERO);
 	    			new_mask   = arrToUnsignedNumber(char_input_buf,     11, 2);
 	    			new_filter = arrToUnsignedNumber(char_input_buf+11, 11, 2);
-	    			esos_ecan_canfactory_subscribe(__pstSelf, new_filter, new_mask, MASKCONTROL_FIELD_NONZERO);
+	    			//esos_ecan_canfactory_subscribe(__pstSelf, new_filter, new_mask, MASKCONTROL_FIELD_NONZERO);
 
 	    			ESOS_TASK_WAIT_ON_SEND_STRING("new_mask: ");
 	    			ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(new_mask);
@@ -204,7 +204,7 @@ ESOS_USER_TASK(listen_only)
 	    			esos_ecan_canfactory_unsubscribe(__pstSelf, new_filter, new_mask, MASKCONTROL_FIELD_NONZERO); // must unsubscribe first to use old variable values
 	    			new_mask   = arrToUnsignedNumber(char_input_buf,     3, 16);
 	    			new_filter = arrToUnsignedNumber((char_input_buf+3), 3, 16);
-	    			esos_ecan_canfactory_subscribe(__pstSelf, new_filter, new_mask, MASKCONTROL_FIELD_NONZERO);
+	    			//esos_ecan_canfactory_subscribe(__pstSelf, new_filter, new_mask, MASKCONTROL_FIELD_NONZERO);
 
 	    			ESOS_TASK_WAIT_ON_SEND_STRING("new_mask: ");
 	    			ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(new_mask);

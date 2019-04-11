@@ -68,7 +68,7 @@ uint16_t u16_sensor_millivolts;
 uint32_t u32_scaled_DAC_value;
 uint16_t u16_I2C_temp;
 uint8_t  u8_wav_val; // temp storage for the current step of the wave
-uint16_t u16_volt_scale; // temp storage for current setting of wave amplitude
+int16_t  i16_volt_scale; // temp storage for current setting of wave amplitude
 uint16_t u16_DAC_wave_out_index; // initilized in fcn_synth task
 uint64_t sixty_four_test;
 // Timer2 configuration
@@ -523,7 +523,7 @@ ESOS_USER_TASK ( monitor_for_beacons ) {
 
         // current board is always active
         u32_active_board_timout_time[MY_ID] = esos_GetSystemTick() + USR_ECAN_BEACON_TIMEOUT_INTERVAL;
-        
+        //printf("menu ampltd: %d\n",ampltd.entries[0].value);
         //ESOS_TASK_WAIT_FOR_MAIL();
         if(ESOS_TASK_IVE_GOT_MAIL()){
             ESOS_TASK_GET_NEXT_MESSAGE( &msg );
@@ -622,7 +622,7 @@ ESOS_USER_INTERRUPT( ESOS_IRQ_PIC24_T2 ) { // ESOS_IRQ_PIC24_T2
     // get variablesESOS_IRQ_PIC24_T2
     //esos_uiF14_turnLED1On();
     //printf("Hi\n");
-    u16_volt_scale = ampltd.entries[0].value;
+    i16_volt_scale = ampltd.entries[0].value;
     if(menu_setWvform.u8_choice == 0){ //tri, sine, square, usr1
         u8_wav_val = au8_tritbl[u16_DAC_wave_out_index];
         //printf("tri - ");
@@ -640,13 +640,14 @@ ESOS_USER_INTERRUPT( ESOS_IRQ_PIC24_T2 ) { // ESOS_IRQ_PIC24_T2
     }
     //write to DAC
         // amplitude scaled value of the array - double length at least
-        // u32_scaled_DAC_value = ((uint32_t)u8_wav_val * (uint32_t)u16_volt_scale * (uint32_t)16 / (uint32_t)33) + 
-        //                        ((uint32_t)u8_wav_val * (uint32_t)u16_volt_scale * (uint32_t)15/(uint32_t)33 / (uint32_t)255); // max of 0xFFF, min of 0x000
-        u32_scaled_DAC_value = (uint32_t)u8_wav_val * (uint32_t)u16_volt_scale;
+        // u32_scaled_DAC_value = ((uint32_t)u8_wav_val * (uint32_t)i16_volt_scale * (uint32_t)16 / (uint32_t)33) + 
+        //                        ((uint32_t)u8_wav_val * (uint32_t)i16_volt_scale * (uint32_t)15/(uint32_t)33 / (uint32_t)255); // max of 0xFFF, min of 0x000
+        u32_scaled_DAC_value = u8_wav_val * i16_volt_scale;
         u32_scaled_DAC_value = u32_scaled_DAC_value << 6;
-        u32_scaled_DAC_value = u32_scaled_DAC_value / ((uint32_t)255*33*2*2*2*2*2*2);
+        u32_scaled_DAC_value = u32_scaled_DAC_value / (255*33*2*2*2*2*2*2);
         // send value to DACA
         //printf("Preparing to setDACA inside interrupt...\n");
+        ///////printf("wav_val: %d u32_scaled_DAC_value: %lu ",u8_wav_val, u32_scaled_DAC_value); printf("volt_scale: %d (from %d)\n", i16_volt_scale, ampltd.entries[0].value);
         setDACA((uint16_t)u32_scaled_DAC_value);
         //printf("wav_val: %d, scaled DAC: 0x%08lX index:%d, \n", u8_wav_val, u32_scaled_DAC_value, u16_DAC_wave_out_index);
     //increment index of array
