@@ -18,6 +18,7 @@ ESOSSupportLibSources = [
   'src/fall17lib.c',
   'src/esos_ecan.c',
   'src/DAC_comms.c',
+  'src/my_spi.c',
   'src/I2C_comms.c',
   'src/esos_pic24_ecan.c']
 

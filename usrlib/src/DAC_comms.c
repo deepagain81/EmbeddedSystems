@@ -3,6 +3,7 @@
 // Functions to control the SPI controlled Digitial to Analog converter on the revF14 board
 
 #include "DAC_comms.h"
+#include "my_spi.h"
 #include <stdio.h>
 //#include "esos_pic24.h"
 //#include "esos_f14ui.h"
