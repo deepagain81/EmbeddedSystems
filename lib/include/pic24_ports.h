@@ -480,6 +480,7 @@
 /// see <a href="#remappableOutputs">remappable peripheral output support</a>
 /// for more information.
 #if defined(_RPOUT_SCK1OUT) || defined(__DOXYGEN__)
+#warning It is defined!
 # define CONFIG_SCK1OUT_TO_RP(Rxy_RP)  _CONFIG_SCK1OUT_TO_RP(Rxy_RP)
 # define _CONFIG_SCK1OUT_TO_RP(Rxy_RP) (_RP##Rxy_RP##R = _RPOUT_SCK1OUT)
 #endif

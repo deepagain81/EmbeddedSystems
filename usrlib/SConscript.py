@@ -15,10 +15,10 @@ ESOSSupportLibSources = [
   'src/esos_lcd44780.c',
   'src/esos_pic24_lcd44780.c',
   'src/esos_menu.c',
-  'src/fall17lib.c',
+  'src/fall7lib.c',
   'src/esos_ecan.c',
+  'src/usr_spi_lib.c',
   'src/DAC_comms.c',
-  'src/my_spi.c',
   'src/I2C_comms.c',
   'src/esos_pic24_ecan.c']
 

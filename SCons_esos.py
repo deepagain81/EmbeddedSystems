@@ -60,8 +60,8 @@ for sourceFile in Glob('ESOSApplications/*.c', True, True, True):
         'usrlib/src/esos_pic24_lcd44780.c',
         'usrlib/src/esos_menu.c',
         'usrlib/src/fall17lib.c',
+        'usrlib/src/usr_spi_lib.c',
         'usrlib/src/DAC_comms.c',
-        'usrlib/src/my_spi.c'
         'usrlib/src/esos_ecan.c',
         'usrlib/src/esos_pic24_ecan.c'])
     linker_side_effect(env, p)
