@@ -231,8 +231,9 @@ def buildTargetsSConscript(
 # -----------------------
 env_nonESOS = env.Clone(MCU='33EP512GP806')
 env_nonESOS.Append(CPPDEFINES = ['HARDWARE_PLATFORM=EMBEDDED_F14'],CPPPATH = ['usrlib/include'])
-buildTargetsSConscript(['NonESOSApplications'],
-env_nonESOS, 'NonESOS')
+####buildTargetsSConscript(['NonESOSApplications'],
+####env_nonESOS, 'NonESOS')
+
 # Build small, non-DMA on the PIC24HJ32GP202
 ##buildTargetsSConscript(['chap08', 'chap09', 'chap10', 'chap11', 'chap12'],
 ##env.Clone(MCU='24HJ64GP202'), 'default')

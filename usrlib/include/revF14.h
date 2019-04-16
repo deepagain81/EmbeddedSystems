@@ -6,9 +6,10 @@
 #ifndef REV_F14
 #define REV_F14
 // Include appropriate pic24 and ESOS libraries here
-#include "pic24_all.h"
-//#include "esos_pic24_spi.h"
+
+#include "esos_pic24_spi.h"
 #include "usr_spi_lib.h"
+#include "pic24_all.h"
 	
 // implement macros to initialized, use, and shutdown the following:
 	
@@ -73,7 +74,7 @@
 #define CONFIG_DAC_SDO() CONFIG_RD4_AS_DIG_OUTPUT()
 #define CONFIG_DAC_SCK() CONFIG_RD5_AS_DIG_OUTPUT()
 #define CONFIG_DAC_CS()  CONFIG_RF1_AS_DIG_OUTPUT()
-#define CONFIG_DAC() {\
+/*#define CONFIG_DAC() {\
 SPI1CON1 = SEC_PRESCAL_1_1     |\
            PRI_PRESCAL_4_1     |\
            CLK_POL_ACTIVE_HIGH |\
@@ -87,7 +88,7 @@ CONFIG_SCK1OUT_TO_RP(RD5_RP);\
 SPI1STATbits.SPIEN = 1;\
 CONFIG_DAC_CS();\
 DAC_SET_CS_HIGH();\
-}
+}*/
 #define DAC_SET_SDO_LOW()    (_LATD4 = 0)
 #define DAC_SET_SDO_HIGH()   (_LATD4 = 1)
 #define DAC_SET_SCK_LOW()    (_LATD5 = 0)
@@ -234,7 +235,7 @@ CONFIG_RPGA();\
 CONFIG_RPGB();\
 CONFIG_VPOT();\
 CONFIG_VTEMP();\
-CONFIG_DAC();\
+/*CONFIG_DAC();*/\
 CONFIG_I2C();\
 LCD_INITIAL_CONFIG();\
 /*LED Default State*/\
