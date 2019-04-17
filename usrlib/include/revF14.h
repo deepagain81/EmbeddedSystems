@@ -10,7 +10,13 @@
 #include "esos_pic24_spi.h"
 #include "usr_spi_lib.h"
 #include "pic24_all.h"
-	
+
+
+/*This is added because Brian said to*/
+// # define RPMAP_SCK1OUT  6
+// # define CONFIG_SCK1OUT_TO_RP(RD5_RP)  _CONFIG_SCK1OUT_TO_RP(RD5_RP)
+//# define _CONFIG_SCK1OUT_TO_RP(RD4_RP) (_RP##Rxy_RP##R = RPMAP_SCK1OUT)
+/*djfhdjkfhdfh*/
 // implement macros to initialized, use, and shutdown the following:
 	
 // LED1 (red)
@@ -74,9 +80,10 @@
 #define CONFIG_DAC_SDO() CONFIG_RD4_AS_DIG_OUTPUT()
 #define CONFIG_DAC_SCK() CONFIG_RD5_AS_DIG_OUTPUT()
 #define CONFIG_DAC_CS()  CONFIG_RF1_AS_DIG_OUTPUT()
-/*#define CONFIG_DAC() {\
-SPI1CON1 = SEC_PRESCAL_1_1     |\
-           PRI_PRESCAL_4_1     |\
+/*here*/
+#define CONFIG_DAC() {\
+SPI1CON1 = PRI_PRESCAL_1_1     |\
+           SEC_PRESCAL_4_1     |\
            CLK_POL_ACTIVE_HIGH |\
            SPI_CKE_ON          |\
            SPI_MODE8_ON        |\
@@ -88,7 +95,9 @@ CONFIG_SCK1OUT_TO_RP(RD5_RP);\
 SPI1STATbits.SPIEN = 1;\
 CONFIG_DAC_CS();\
 DAC_SET_CS_HIGH();\
-}*/
+}
+
+/*here*/
 #define DAC_SET_SDO_LOW()    (_LATD4 = 0)
 #define DAC_SET_SDO_HIGH()   (_LATD4 = 1)
 #define DAC_SET_SCK_LOW()    (_LATD5 = 0)
