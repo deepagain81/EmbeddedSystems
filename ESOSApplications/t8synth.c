@@ -80,6 +80,8 @@ typedef struct {
     uint16_t LED_state;
 } BOARD_STATE;
 
+uint16_t selected_board_index_x;
+
 // Globals - from fcn_synth.c
 const uint8_t au8_sinetbl[] = {127,133,139,146,152,158,164,170,176,181,187,192,198,203,208,212,217,221,225,229,233,236,239,242,244,247,249,250,252,253,253,254,254,254,253,253,252,250,249,247,244,242,239,236,233,229,225,221,217,212,208,203,198,192,187,181,176,170,164,158,152,146,139,133,127,121,115,108,102,96,90,84,78,73,67,62,56,51,46,42,37,33,29,25,21,18,15,12,10,7,5,4,2,254,254,0,0,0,254,254,2,4,5,7,10,12,15,18,21,25,29,33,37,42,46,51,56,62,67,73,78,84,90,96,102,108,115,121};
 const uint8_t au8_sqrtbl[]  = {254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -107,46 +109,46 @@ static esos_menu_longmenu_t my_menu = {
     .u8_choice = 0, //Default
     .ast_items = {
         { "Set",
-        "wvform"},
+        "wvform"},   // 0
         { "Set",
-        "freq"},
+        "freq"},     // 1
         { "Set",
-        "ampltd"},
+        "ampltd"},   // 2
         { "Set",
-        "duty"},
+        "duty"},     // 3
         { "Read",
-        "LM60"},
+        "LM60"},     // 4
         { "Read",
-        "1631"},
+        "1631"},     // 5
         { "Set",
-        "LEDs"},
+        "LEDs"},     // 6
         { "",
-        "About..."},
+        "About..."}, // 7
     },
 };
 
-static esos_menu_longmenu_t my_menu_no_duty_cycle = {
-    .u8_numitems = 7,
-    .u8_choice = 0, //Default
-    .ast_items = {
-        { "Set",
-        "wvform"},
-        { "Set",
-        "freq"},
-        { "Set",
-        "ampltd"},
-        //{ "Set",
-        //"duty"},
-        { "Read",
-        "LM60"},
-        { "Read",
-        "1631"},
-        { "Set",
-        "LEDs"},
-        { "",
-        "Back..."},
-    },
-};
+// static esos_menu_longmenu_t my_menu_no_duty_cycle = {
+//     .u8_numitems = 7,
+//     .u8_choice = 0, //Default
+//     .ast_items = {
+//         { "Set",
+//         "wvform"},
+//         { "Set",
+//         "freq"},
+//         { "Set",
+//         "ampltd"},
+//         //{ "Set",
+//         //"duty"},
+//         { "Read",
+//         "LM60"},
+//         { "Read",
+//         "1631"},
+//         { "Set",
+//         "LEDs"},
+//         { "",
+//         "Back..."},
+//     },
+// };
 
 // To display error msg
 static esos_menu_staticmenu_t err = {
@@ -466,39 +468,39 @@ ESOS_USER_TASK( set_LEDs_task ) {
  ************************************************************************
  */
 
-ESOS_USER_TASK ( test_message_type_sending ) {
-    static uint8_t buf[8];
-    static uint16_t u16_sending_can_message_id; // should encompass the destination board Team, member, and the message type
-    static uint16_t u16_test_msg_types;
+// ESOS_USER_TASK ( test_message_type_sending ) {
+//     static uint8_t buf[8];
+//     static uint16_t u16_sending_can_message_id; // should encompass the destination board Team, member, and the message type
+//     static uint16_t u16_test_msg_types;
     
-    ESOS_TASK_BEGIN();
-    esos_uiF14_flashLED3(1000);
-    ESOS_TASK_WAIT_TICKS( 100 ); // delay for proper TEXT startup
-    u16_test_msg_types = 0;
+//     ESOS_TASK_BEGIN();
+//     esos_uiF14_flashLED3(1000);
+//     ESOS_TASK_WAIT_TICKS( 100 ); // delay for proper TEXT startup
+//     u16_test_msg_types = 0;
     
-    while ( 1 ) {
-        buf[0] = !SW1;
-        buf[1] = !SW2;
-        buf[2] = buf[0];
-        buf[3] = buf[1];
-        buf[4] = buf[0];
-        buf[5] = buf[1];
-        buf[6] = buf[0];
-        buf[7] = buf[1];
+//     while ( 1 ) {
+//         buf[0] = !SW1;
+//         buf[1] = !SW2;
+//         buf[2] = buf[0];
+//         buf[3] = buf[1];
+//         buf[4] = buf[0];
+//         buf[5] = buf[1];
+//         buf[6] = buf[0];
+//         buf[7] = buf[1];
         
-        LED1 = buf[0];
-        LED2 = buf[1];
+//         LED1 = buf[0];
+//         LED2 = buf[1];
 
-        u16_sending_can_message_id = calcMsgID(MY_ID) | u16_test_msg_types; // CANMSG_TYPE_LEDS
-        u16_test_msg_types = (u16_test_msg_types + 1) % 10;
+//         u16_sending_can_message_id = calcMsgID(MY_ID) | u16_test_msg_types; // CANMSG_TYPE_LEDS
+//         u16_test_msg_types = (u16_test_msg_types + 1) % 10;
         
-        ESOS_ECAN_SEND( u16_sending_can_message_id, buf, 8 );    //CAN_id, msg, msg_len
-          ESOS_TASK_WAIT_ON_SEND_STRING("SENT\n");
-        ESOS_TASK_WAIT_TICKS( 500 );
-    }
+//         ESOS_ECAN_SEND( u16_sending_can_message_id, buf, 8 );    //CAN_id, msg, msg_len
+//           ESOS_TASK_WAIT_ON_SEND_STRING("SENT\n");
+//         ESOS_TASK_WAIT_TICKS( 500 );
+//     }
     
-    ESOS_TASK_END();
-}
+//     ESOS_TASK_END();
+// }
 
 ESOS_USER_TASK ( transmit_beacon ) {
     static uint16_t u16_sending_can_message_id; // should encompass the destination board Team, member, and the message type
@@ -515,7 +517,7 @@ ESOS_USER_TASK ( transmit_beacon ) {
     ESOS_TASK_END();
 }
 
-ESOS_USER_TASK ( monitor_for_beacons ) {
+ESOS_USER_TASK ( monitor_for_beacons ) { // should monitor for all CAN messages
     static uint8_t buf[8] = {0};
     static uint8_t u8_len;
     static uint16_t u16_canID;
@@ -598,6 +600,36 @@ ESOS_USER_TASK ( monitor_for_beacons ) {
     ESOS_TASK_END();
 }
 
+// lab8 user task
+ESOS_USER_TASK ( update_menus_for_CAN_data ) {
+    static uint16_t previous_selected_board;
+    static char first_char;
+    static char second_char;
+    static char temp_string[10];
+    static int i;
+    ESOS_TASK_BEGIN();
+    previous_selected_board = selected_board_index_x; // me by default
+    while(1){
+        // update menu based on info
+        // if(previous_selected_board != selected_board_index_x){
+        //     change_menus_to_board(selected_board_index_x);
+        //     // edit menu titles
+        //     first_char  = (selected_board_index_x / 10) + '0';
+        //     second_char = (selected_board_index_x % 10) + '0';
+        //     for(i = 0; i<my_menu.u8_numitems-1; i++){
+        //         temp_string = my_menu.ast_items[i][0];
+        //         temp_string[0] = first_char;
+        //         temp_string[1] = second_char;
+        //         my_menu.ast_items[i][0] = temp_string; // first char
+        //         //my_menu.ast_items[i][0][1] = second_char; // second char
+        //     }
+        //     previous_selected_board = selected_board_index_x; // updated previous
+        // }
+        ESOS_TASK_WAIT_TICKS(100);
+    }
+    ESOS_TASK_END();
+}
+
 // ESOS tast to handle temperature messages - requests or incoming data?
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -668,7 +700,7 @@ ESOS_USER_INTERRUPT( ESOS_IRQ_PIC24_T2 ) { // ESOS_IRQ_PIC24_T2
         // send value to DACA
         //printf("Preparing to setDACA inside interrupt...\n");
         ///////printf("wav_val: %d u32_scaled_DAC_value: %lu ",u8_wav_val, u32_scaled_DAC_value); printf("volt_scale: %d (from %d)\n", i16_volt_scale, ampltd.entries[0].value);
-    //setDACA((uint16_t)u32_scaled_DAC_value);
+    setDACA((uint16_t)u32_scaled_DAC_value);
         //printf("wav_val: %d, scaled DAC: 0x%08lX index:%d, \n", u8_wav_val, u32_scaled_DAC_value, u16_DAC_wave_out_index);
     //increment index of array
     u16_DAC_wave_out_index = (u16_DAC_wave_out_index + 1)%128; // arrays are 128 elements
@@ -695,9 +727,10 @@ void     initilize_can_board_status(){
         can_board_status[i].measured_temperature_1631 = -1;
         can_board_status[i].LED_state = 0;
     }
+    selected_board_index_x = 0; // default to my board
     my_menu.u8_choice = 0; // default to first choice
-    change_menus_to_board(0); // default to my_board
-    duty.entries[0].value    = 50;
+    change_menus_to_board(selected_board_index_x); // default to my_board
+    duty.entries[0].value    = 50; // set duty cycle to 50%
 }
 void     change_menus_to_board(uint16_t board_y_index){
     menu_setWvform.u8_choice = can_board_status[board_y_index].selected_waveform;
@@ -726,6 +759,7 @@ void user_init ( void ) {
     //config_esos_uiF14();
     esos_menu_init();
     esos_RegisterTask(fcn_synth);
+    esos_RegisterTask(update_menus_for_CAN_data);
     esos_RegisterTask(read_LM60_task);
     esos_RegisterTask(read_1631_task);
     esos_RegisterTask(set_LEDs_task);

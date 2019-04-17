@@ -297,6 +297,9 @@ ESOS_USER_TASK(esos_menu_task)
 			}
 			ESOS_TASK_YIELD();
 		}
+		while(__esos_menu_conf.e_menutype == BOARDSELECTION) {
+			ESOS_TASK_YIELD();
+		}
 
 		// Clean up the display after finishing a menu.
 		esos_lcd44780_clearScreen();

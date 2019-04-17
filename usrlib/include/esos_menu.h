@@ -64,6 +64,26 @@ typedef struct {
 	//bool editable;
 } esos_menu_datadisplaymenu_t;
 
+////////////////////////////////////////////////////////////// lab8
+typedef struct {
+	uint16_t board_number_x;
+	BOOL hidden;
+	char number_label[2]; // conversion from numbers
+	char ac_line1_label[6];
+	char ac_line2[8];
+} esos_menu_boardselection_item_t;
+
+typedef struct {
+	uint8_t u8_numitems;
+	uint8_t u8_choice;
+	char default_text_line1[8];
+	char default_text_line2[8];
+	esos_menu_boardselection_item_t ast_items[];
+	//uint8_t board_number_x;
+	//bool editable;
+} esos_menu_boardselectionmenu_t;
+///////////////////////////////////////////////////////////// lab8-END
+
 // Call this to initialize the cherrymenu subsystem.
 void esos_menu_init(void);
 
@@ -96,6 +116,13 @@ void esos_menu_init(void);
 	__esos_menu_conf.pv_data = ps_menu; \
 	ESOS_TASK_WAIT_UNTIL(__esos_menu_conf.e_menutype == NONE); \
 } while(0)
+
+#define ESOS_TASK_WAIT_ESOS_MENU_BOARDSELECTIONMENU(structure) do { \
+	esos_menu_boardselectionmenu_t *ps_menu = &structure; \
+	__esos_menu_conf.e_menutype = BOARDSELECTION; \
+	__esos_menu_conf.pv_data = ps_menu; \
+	ESOS_TASK_WAIT_UNTIL(__esos_menu_conf.e_menutype == NONE); \
+} while(0)
 // Prototypes and definitions below this line are not part of the stable
 // API and should not be used by clients.  Here be dragons.
 
@@ -110,6 +137,7 @@ typedef struct {
 		STATICMENU,
 		ENTRY,
 		DATADISPLAY,
+		BOARDSELECTION,
 	} e_menutype;
 	void *pv_data;
 } __esos_menu_conf_t;
