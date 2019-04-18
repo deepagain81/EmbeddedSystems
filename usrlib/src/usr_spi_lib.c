@@ -50,9 +50,12 @@ void spiInteraction(uint16_t *pu16_out, uint16_t *pu16_in, uint16_t u16_cnt) {
      * and appears to work in all cases.
      */
     // wait for TX word to be copied to SPI1SR
+    printf("usr_spi_lib.c: At first while.\n");
     while( SPI1STAT & SPI_TX_BUFFER_FULL );
+    printf("usr_spi_lib.c: ENDED first while. Beginning second...\n");
     // wait for RX word to be copied from SPI1SR
-    while( !(SPI1STAT & SPI_RX_BUFFER_FULL) ); // was a wait until
+    while( !(SPI1STAT & SPI_RX_BUFFER_FULL) ){/*Do nothing*/} // was a wait until
+    printf("usr_spi_lib.c: END second while.\n");
     // read the word from SPI (clears SPI_RX_BUFFER_FULL bit)
     u16_scratch = SPI1BUF;
     if (u8_isReading) {

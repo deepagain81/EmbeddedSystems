@@ -224,7 +224,7 @@ ESOS_USER_TASK( fcn_synth ) {
     //setDACA(0x3FF);
     //shutdownDACA();
     //shutdownDACB();
-    //setDACA( 0x513 ); // proves that DACA works
+    setDACA( 0x513 ); // proves that DACA works
     //setDACB( 0x0FF ); // proves that DACB works
     while(TRUE){
         //printf("Beginning of fcn_synth loop...\n");
