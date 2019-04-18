@@ -127,6 +127,31 @@ static esos_menu_longmenu_t my_menu = {
     },
 };
 
+static esos_menu_boardselectionmenu_t my_board_select_menu = {
+    .u8_numitems = 22,
+    .u8_choice   = 0, // Default to me
+    .default_text_line1 = "All Entry",
+    .default_text_line2 = "Hidden",
+    .ast_items[NUM_OF_IDS] = {0},
+};
+// typedef struct {
+//     uint16_t board_number_x;
+//     BOOL hidden;
+//     char number_label[2]; // conversion from numbers
+//     char ac_line1_label[6];
+//     char ac_line2[8];
+// } esos_menu_boardselection_item_t;
+
+// typedef struct {
+//     uint8_t u8_numitems;
+//     uint8_t u8_choice;
+//     char default_text_line1[8];
+//     char default_text_line2[8];
+//     esos_menu_boardselection_item_t ast_items[];
+//     //uint8_t board_number_x;
+//     //bool editable;
+// } esos_menu_boardselectionmenu_t;
+
 // static esos_menu_longmenu_t my_menu_no_duty_cycle = {
 //     .u8_numitems = 7,
 //     .u8_choice = 0, //Default
@@ -248,10 +273,10 @@ ESOS_USER_TASK( fcn_synth ) {
     ESOS_TASK_BEGIN();
     u16_DAC_wave_out_index = 0; // initilize to the first index of the wave
     //setDACA(0x3FF);
-    shutdownDACA();
-    shutdownDACB();
-    setDACA( 0x513 ); // proves that DACA works
-    setDACB( 0x0FF ); // proves that DACB works
+    //shutdownDACA();
+    //shutdownDACB();
+    //setDACA( 0x513 ); // proves that DACA works
+    //setDACB( 0x0FF ); // proves that DACB works
     while(TRUE){
         //printf("Beginning of fcn_synth loop...\n");
         // Display main menu until sw3 pressed

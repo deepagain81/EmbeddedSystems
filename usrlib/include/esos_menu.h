@@ -66,10 +66,10 @@ typedef struct {
 
 ////////////////////////////////////////////////////////////// lab8
 typedef struct {
-	uint16_t board_number_x;
+	//uint16_t board_number_x;
 	BOOL hidden;
-	char number_label[2]; // conversion from numbers
-	char ac_line1_label[6];
+	//char number_label[2]; // conversion from numbers
+	char ac_line1[8];
 	char ac_line2[8];
 } esos_menu_boardselection_item_t;
 

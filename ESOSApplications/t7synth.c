@@ -222,10 +222,10 @@ ESOS_USER_TASK( fcn_synth ) {
     ESOS_TASK_BEGIN();
     u16_DAC_wave_out_index = 0; // initilize to the first index of the wave
     //setDACA(0x3FF);
-    shutdownDACA();
-    shutdownDACB();
-    setDACA( 0x513 ); // proves that DACA works
-    setDACB( 0x0FF ); // proves that DACB works
+    //shutdownDACA();
+    //shutdownDACB();
+    //setDACA( 0x513 ); // proves that DACA works
+    //setDACB( 0x0FF ); // proves that DACB works
     while(TRUE){
         //printf("Beginning of fcn_synth loop...\n");
         // Display main menu until sw3 pressed
@@ -649,7 +649,7 @@ ESOS_USER_INTERRUPT( ESOS_IRQ_PIC24_T2 ) { // ESOS_IRQ_PIC24_T2
         //printf("Preparing to setDACA inside interrupt...\n");
         ///////printf("wav_val: %d u32_scaled_DAC_value: %lu ",u8_wav_val, u32_scaled_DAC_value); printf("volt_scale: %d (from %d)\n", i16_volt_scale, ampltd.entries[0].value);
     //setDACA((uint16_t)u32_scaled_DAC_value);
-        //printf("wav_val: %d, scaled DAC: 0x%08lX index:%d, \n", u8_wav_val, u32_scaled_DAC_value, u16_DAC_wave_out_index);
+        printf("wav_val: %d, scaled DAC: 0x%08lX index:%d, \n", u8_wav_val, u32_scaled_DAC_value, u16_DAC_wave_out_index);
     //increment index of array
     u16_DAC_wave_out_index = (u16_DAC_wave_out_index + 1)%128; // arrays are 128 elements
     //WAVEOUT = !WAVEOUT;

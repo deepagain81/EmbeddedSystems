@@ -298,6 +298,11 @@ ESOS_USER_TASK(esos_menu_task)
 			ESOS_TASK_YIELD();
 		}
 		while(__esos_menu_conf.e_menutype == BOARDSELECTION) {
+			static esos_menu_datadisplaymenu_t *pst_menu;
+			pst_menu = __esos_menu_conf.pv_data;
+			// Draw the lines
+			esos_lcd44780_clearScreen();
+			esos_lcd44780_writeString(0, 0, pst_menu->label);
 			ESOS_TASK_YIELD();
 		}
 
