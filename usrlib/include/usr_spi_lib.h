@@ -117,6 +117,7 @@ Transaction: Write 1 (ONE) "word" stored in variable \em u16_d1 to SPI device.
     }while(0)*/
 
 void spi_write1( uint16_t u16_d1 );
+void checkRxErrorSPI1(void);
 
 
 // We need a 2-byte array to be able to use the buffer.

@@ -35,12 +35,12 @@ void spiInteraction(uint16_t *pu16_out, uint16_t *pu16_in, uint16_t u16_cnt) {
   _SPI1IF = 0;
    // read SPI1BUF to clear SPI_RX_BUFFER_FULL bit just in case previous
    //   SPI use did not read the SPI1BUF that last time!
-  
   u16_scratch = SPI1BUF;
   for (u16_i=0; u16_i < u16_tempCnt; u16_i++) {
     if (u8_isWriting) {
       SPI1BUF = *pu16_tempPtrOut;
       pu16_tempPtrOut++;
+      printf("buf: %d\n",pu16_tempPtrOut[0] );
     } else {
       SPI1BUF = 0;
     } // end isWriting
@@ -52,20 +52,33 @@ void spiInteraction(uint16_t *pu16_out, uint16_t *pu16_in, uint16_t u16_cnt) {
     // wait for TX word to be copied to SPI1SR
     printf("usr_spi_lib.c: At first while.\n");
     while( SPI1STAT & SPI_TX_BUFFER_FULL );
-    printf("usr_spi_lib.c: ENDED first while. Beginning second...\n");
+    printf("4..\n");
+    printf("%d\n",_SPI1IF );
     // wait for RX word to be copied from SPI1SR
     while( !(SPI1STAT & SPI_RX_BUFFER_FULL) ){/*Do nothing*/} // was a wait until
     printf("usr_spi_lib.c: END second while.\n");
     // read the word from SPI (clears SPI_RX_BUFFER_FULL bit)
+    printf("5..\n");
     u16_scratch = SPI1BUF;
     if (u8_isReading) {
       *pu16_tempPtrIn = u16_scratch;
       pu16_tempPtrIn++;
     } // end isReading
   } // end for()
+  printf("Here\n");
 } // end spiInteraction
 
+void checkRxErrorSPI1(void){
+  SPI1STATbits.SPIROV = 0;
+}
 
 void spi_write1( uint16_t u16_d1 ){
+  printf("u16_d1: %d\n",u16_d1 );
 	spiInteraction(&u16_d1, NULLPTR, 1);
+  // _SPI1IF = 0;
+  // SPI1BUF = u16_d1;
+  // while(!_SPI1IF){
+  //   printf("while: \n");
+  //   doHeartbeat();
+  // }
 }

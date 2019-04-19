@@ -15,7 +15,7 @@ void setDACA(uint16_t u16_analog_target){
 	
 	command_to_send = u16_analog_target & 0b0000111111111111; // get 12-bit data intended for sending
 	command_to_send = command_to_send | DAC_config_channelA | DAC_config_normalGain | DAC_config_activePin | 0b0100000000000000; // trying buffered
-	//printf("Command to send: %d\n",command_to_send);
+	printf(" 1Command to send: %d\n",command_to_send);
 	// ESOS_TASK_WAIT_ON_SEND_STRING(" DACA command: ");
 	// ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(command_to_send);
 	// ESOS_TASK_WAIT_ON_SEND_STRING("\n");
@@ -41,7 +41,7 @@ void setDACA(uint16_t u16_analog_target){
 	// 	command_to_send = command_to_send << 1;
 	// }
 	// DAC_SET_CS_HIGH(); // stop sending data
-	// //printf("Command to send: %d\n",command_to_send);
+	printf(" 2Command to send: %d\n",command_to_send);
 }
 void setDACB(uint16_t u16_analog_target){
 	uint16_t command_to_send = 0;
