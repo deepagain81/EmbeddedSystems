@@ -11,7 +11,7 @@
 
 void setDACA(uint16_t u16_analog_target){
 	uint16_t command_to_send = 0;
-	//int i; // see for loop
+	int i; // see for loop
 	
 	command_to_send = u16_analog_target & 0b0000111111111111; // get 12-bit data intended for sending
 	command_to_send = command_to_send | DAC_config_channelA | DAC_config_normalGain | DAC_config_activePin | 0b0100000000000000; // trying buffered

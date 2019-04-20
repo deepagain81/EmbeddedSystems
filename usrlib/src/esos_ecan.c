@@ -212,21 +212,21 @@ void esos_ecan_canfactory_subscribe(ESOS_TASK_HANDLE pst_Task, uint16_t u16_can_
 void esos_ecan_canfactory_unsubscribe ( uint8_t (*pst_Task) (ESOS_TASK_HANDLE), uint16_t u16_can_id, uint16_t u16_mask, maskcontrol_t m_mask_control ) {
     uint8_t u8_i;
 
-    printf("unsubscribe: attempting to match values: task: %d, can_id: %X, mask: %X, m_mask_control: %d\n", pst_Task, u16_can_id, u16_mask, m_mask_control);
+    //printf("unsubscribe: attempting to match values: task: %d, can_id: %X, mask: %X, m_mask_control: %d\n", pst_Task, u16_can_id, u16_mask, m_mask_control);
 
     for ( u8_i = 0; u8_i < u8_numCANFactoryClients; ++u8_i ) {
-        printf("unsubscribe: testing %d, %X, %X, %d\n", pst_Task, canfactory_clients[ u8_i ].u16_canID, canfactory_clients[ u8_i ].u16_idMask, canfactory_clients[ u8_i ].m_idMaskControl);
+        //printf("unsubscribe: testing %d, %X, %X, %d\n", pst_Task, canfactory_clients[ u8_i ].u16_canID, canfactory_clients[ u8_i ].u16_idMask, canfactory_clients[ u8_i ].m_idMaskControl);
         if ( canfactory_clients[ u8_i ].pf_task == pst_Task && canfactory_clients[ u8_i ].u16_canID == u16_can_id && canfactory_clients[ u8_i ].u16_idMask == u16_mask && canfactory_clients[ u8_i ].m_idMaskControl == m_mask_control ) {
             uint8_t u8_n;
-            printf("starting unsubscribe. u8_n should be %d total: %d\n", u8_i, u8_numCANFactoryClients);
+            //printf("starting unsubscribe. u8_n should be %d total: %d\n", u8_i, u8_numCANFactoryClients);
             for ( u8_n = u8_i; u8_n < u8_numCANFactoryClients - 1; ++u8_n ) {
-                printf("u8_n: %d\n", u8_n);
+                //printf("u8_n: %d\n", u8_n);
                 canfactory_clients[ u8_n ] = canfactory_clients[ u8_n + 1 ];
             }
             --u8_numCANFactoryClients;
             break;
         }
-        printf("Unsubscribe: No match. u8_i: %d\n", u8_i);
+        //printf("Unsubscribe: No match. u8_i: %d\n", u8_i);
     }
 
     return;

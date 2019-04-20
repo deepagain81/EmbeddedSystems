@@ -224,7 +224,7 @@ ESOS_USER_TASK( fcn_synth ) {
     //setDACA(0x3FF);
     //shutdownDACA();
     //shutdownDACB();
-    setDACA( 0x513 ); // proves that DACA works
+    //setDACA( 0x513 ); // proves that DACA works
     //setDACB( 0x0FF ); // proves that DACB works
     while(TRUE){
         //printf("Beginning of fcn_synth loop...\n");
@@ -609,9 +609,6 @@ void configTimer2(void){
     //_T2IP = 3;        //priority
     //_T2IE = 1;        // Enable
     ESOS_MARK_PIC24_USER_INTERRUPT_SERVICED(ESOS_IRQ_PIC24_T2); // pg 625
-
-    ESOS_REGISTER_PIC24_USER_INTERRUPT( ESOS_IRQ_PIC24_T2, ESOS_USER_IRQ_LEVEL1, _T2Interrupt);
-    ESOS_ENABLE_PIC24_USER_INTERRUPT(ESOS_IRQ_PIC24_T2);
     T2CONbits.TON = 1;      // turn on the timer
     //printf("End of configTimer2(). Returning to ESOS...");
 }//end timer config
@@ -653,7 +650,8 @@ ESOS_USER_INTERRUPT( ESOS_IRQ_PIC24_T2 ) { // ESOS_IRQ_PIC24_T2
     //increment index of array
     u16_DAC_wave_out_index = (u16_DAC_wave_out_index + 1)%128; // arrays are 128 elements
     //WAVEOUT = !WAVEOUT;
-    _T2IF = 0;  // clear interrupt flag
+    //_T2IF = 0;  // clear interrupt flag
+    ESOS_MARK_PIC24_USER_INTERRUPT_SERVICED(ESOS_IRQ_PIC24_T2); // clear interrupt using ESOS service
 }
 // end functions from fcn_synth.c
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -682,4 +680,7 @@ void user_init ( void ) {
     esos_RegisterTask(set_LEDs_task);
     esos_pic24_configI2C1(400); // 400kbits/sec is standard speed, 100kbits is slower
     configTimer2();
+
+    ESOS_REGISTER_PIC24_USER_INTERRUPT( ESOS_IRQ_PIC24_T2, ESOS_USER_IRQ_LEVEL1, _T2Interrupt);
+    ESOS_ENABLE_PIC24_USER_INTERRUPT(ESOS_IRQ_PIC24_T2);
 }
