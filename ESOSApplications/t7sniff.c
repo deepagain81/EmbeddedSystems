@@ -118,6 +118,7 @@ ESOS_USER_TASK(listen_only)
 	        ESOS_TASK_WAIT_ON_SEND_STRING("\n");
 
 	        //copy that msg into memory
+	        memset(buf, 0, sizeof(uint8_t[8]));
 	        memcpy(buf, &msg.au8_Contents[sizeof(uint16_t)], u8_len);	// param--> varName, msg itself(start point), len of msg to store
 	        //print data from the msg
 	        for(i = 0; i<8; i++){

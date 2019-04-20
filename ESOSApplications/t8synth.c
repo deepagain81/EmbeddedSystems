@@ -162,11 +162,11 @@ static esos_menu_longmenu_t board_select_long = {
     .u8_choice = 0, //Default
     .ast_items = { // the "X" list
         { "bcw253",
-        "offline"},     // x = 00 : y = 18
+        "need"},     // x = 00 : y = 18
         { "jmp784",
-        "offline"},     // x = 01 : y = 19
+        "need"},     // x = 01 : y = 19
         { "bcj162",
-        "offline"},     // x = 02 : y = 20
+        "need"},     // x = 02 : y = 20
         { "Vuk",
         "offline"},     // x = 03 : y = 21
         { "cbb330",
@@ -693,6 +693,7 @@ ESOS_USER_TASK ( monitor_for_beacons ) { // should monitor for all CAN messages
                 ESOS_TASK_WAIT_ON_SEND_STRING(" netid: ");
                 ESOS_TASK_WAIT_ON_SEND_STRING(aCANID_IDs[u16_timout_check_index].psz_netID);
                 ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+                strcpy(board_select_long.ast_items[index_conversion_x_arr_to_y_arr(u16_timout_check_index)].ac_line2, "offline");
             } 
         } // end for loop - check for inactive beacons
 
@@ -845,10 +846,10 @@ ESOS_USER_INTERRUPT( ESOS_IRQ_PIC24_T2 ) { // ESOS_IRQ_PIC24_T2
 
 ///////// Functions added in lab8 - y is the array in embedded_lab_CANLab.h, X is array used to store state of all boards
 uint16_t index_conversion_x_arr_to_y_arr(uint16_t x_index){
-    return (x_index+MY_ID)%NUM_OF_IDS;
+    return (x_index+(NUM_OF_IDS - MY_ID))%NUM_OF_IDS;
 }
 uint16_t index_conversion_y_arr_to_x_arr(uint16_t y_index){
-    return (y_index + (NUM_OF_IDS - MY_ID)) % NUM_OF_IDS;
+    return (y_index + (MY_ID)) % NUM_OF_IDS;
 }
 void     initilize_can_board_status(){
     int i;
@@ -859,8 +860,8 @@ void     initilize_can_board_status(){
         can_board_status[i].measured_temperature_LM60 = -1;
         can_board_status[i].measured_temperature_1631 = -1;
         can_board_status[i].LED_state = 0;
-        // strcpy(board_select_long.ast_items[i].ac_line1, aCANID_IDs[index_conversion_y_arr_to_x_arr(i)].psz_netID);
-        // strcpy(board_select_long.ast_items[i].ac_line2, "offline");
+        strcpy(board_select_long.ast_items[i].ac_line1, aCANID_IDs[index_conversion_y_arr_to_x_arr(i)].psz_netID);
+        strcpy(board_select_long.ast_items[i].ac_line2, "offline");
     }
     //selected_board_index_x = 0; // default to my board
     alterable_main_menu_function.u8_choice = 0; // default to first choice
