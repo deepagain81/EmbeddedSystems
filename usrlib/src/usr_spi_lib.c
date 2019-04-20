@@ -55,7 +55,7 @@ void spiInteraction(uint16_t *pu16_out, uint16_t *pu16_in, uint16_t u16_cnt) {
     printf("4..\n");
     printf("%d\n",_SPI1IF );
     // wait for RX word to be copied from SPI1SR
-    while( !(SPI1STAT & SPI_RX_BUFFER_FULL) ){/*Do nothing*/} // was a wait until
+  while( !(SPI1STAT & SPI_RX_BUFFER_FULL) ){/*Do nothing*/} // was a wait until
     printf("usr_spi_lib.c: END second while.\n");
     // read the word from SPI (clears SPI_RX_BUFFER_FULL bit)
     printf("5..\n");

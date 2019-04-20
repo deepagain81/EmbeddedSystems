@@ -82,6 +82,19 @@ typedef struct {
 	//uint8_t board_number_x;
 	//bool editable;
 } esos_menu_boardselectionmenu_t;
+
+typedef struct {
+	char ac_line1[6]; // first two elements are for board number
+	char ac_line2[8];
+} esos_menu_multiboardfunctionselectmenu_item_t;
+
+typedef struct {
+	uint8_t u8_numitems;
+	uint8_t u8_choice;
+	uint8_t u8_selected_board;
+	char    ac_selected_board_num[2];
+	esos_menu_multiboardfunctionselectmenu_item_t ast_items[];
+} esos_menu_multiboardfunctionselectmenu_t;
 ///////////////////////////////////////////////////////////// lab8-END
 
 // Call this to initialize the cherrymenu subsystem.
@@ -123,6 +136,13 @@ void esos_menu_init(void);
 	__esos_menu_conf.pv_data = ps_menu; \
 	ESOS_TASK_WAIT_UNTIL(__esos_menu_conf.e_menutype == NONE); \
 } while(0)
+
+#define ESOS_TASK_WAIT_ESOS_MENU_MULTIBOARDFUNCTIONSELECTMENU(structure) do { \
+	esos_menu_multiboardfunctionselectmenu_t *ps_menu = &structure; \
+	__esos_menu_conf.e_menutype = MULTIBOARDFUNCTIONSELECT; \
+	__esos_menu_conf.pv_data = ps_menu; \
+	ESOS_TASK_WAIT_UNTIL(__esos_menu_conf.e_menutype == NONE); \
+} while(0)
 // Prototypes and definitions below this line are not part of the stable
 // API and should not be used by clients.  Here be dragons.
 
@@ -138,6 +158,7 @@ typedef struct {
 		ENTRY,
 		DATADISPLAY,
 		BOARDSELECTION,
+		MULTIBOARDFUNCTIONSELECT,
 	} e_menutype;
 	void *pv_data;
 } __esos_menu_conf_t;

@@ -297,13 +297,129 @@ ESOS_USER_TASK(esos_menu_task)
 			}
 			ESOS_TASK_YIELD();
 		}
+
 		while(__esos_menu_conf.e_menutype == BOARDSELECTION) {
-			static esos_menu_datadisplaymenu_t *pst_menu;
+			static esos_menu_boardselectionmenu_t *pst_menu;
+			static uint16_t num_non_hidden_entries;
+			static uint16_t loop_i;
 			pst_menu = __esos_menu_conf.pv_data;
+			pst_menu->u8_choice = MIN(pst_menu->u8_choice,
+			                          pst_menu->u8_numitems - 1);
 			// Draw the lines
 			esos_lcd44780_clearScreen();
-			esos_lcd44780_writeString(0, 0, pst_menu->label);
+			esos_lcd44780_setCustomChar(0, au8_upArrow);
+			esos_lcd44780_setCustomChar(1, au8_dnArrow);
+
+			while(TRUE){
+				//esos_lcd44780_setCustomChar(2, au8_leftArrow); // for dual entry menu
+				pst_menu->u8_choice = MIN(pst_menu->u8_choice,
+			                          pst_menu->u8_numitems - 1);
+				num_non_hidden_entries = 0;
+				for(loop_i = 0; loop_i < pst_menu->u8_numitems; loop_i++){
+					if(!pst_menu->ast_items[loop_i].hidden){
+						num_non_hidden_entries++;
+					}
+				}
+				printf("non-hidden entries: %d current Index: %d current hidden: %d line1: %s line2: %s\n", num_non_hidden_entries, pst_menu->u8_choice, pst_menu->ast_items[pst_menu->u8_choice].hidden,pst_menu->ast_items[pst_menu->u8_choice].ac_line1,pst_menu->ast_items[pst_menu->u8_choice].ac_line2);
+				if(num_non_hidden_entries > 0){
+					esos_lcd44780_writeString(0, 0, pst_menu->ast_items[pst_menu->u8_choice].ac_line1);
+					esos_lcd44780_writeString(1, 0, pst_menu->ast_items[pst_menu->u8_choice].ac_line2);
+				} else{
+					esos_lcd44780_writeString(0, 0, pst_menu->default_text_line1);
+					esos_lcd44780_writeString(1, 0, pst_menu->default_text_line2);
+				}
+				if(num_non_hidden_entries > 1){ // draw arrowss
+					esos_lcd44780_writeChar(0, 7, '\x00');
+					esos_lcd44780_writeChar(1, 7, '\x01');
+				}
+			
+				// allow for up and down
+				if(esos_uiF14_isSW3Pressed()) {
+					ESOS_TASK_WAIT_UNTIL(!esos_uiF14_isSW3Pressed());
+					// The user has chosen.  Bail out.
+					__esos_menu_conf.e_menutype = NONE;
+					break;
+				}
+				else if(esos_uiF14_isRPGTurning() && esos_uiF14_isRPGTurningCW()) {
+					// Attempt to increase the current value.
+					++pst_menu->u8_choice;
+					for(loop_i = 0;pst_menu->ast_items[pst_menu->u8_choice].hidden && loop_i < pst_menu->u8_numitems;loop_i++){
+						printf("Getting Next non-hidden option...\n");
+						pst_menu->u8_choice = (pst_menu->u8_choice + 1)%pst_menu->u8_numitems;
+					}
+					ESOS_TASK_WAIT_UNTIL(!esos_uiF14_isRPGTurning());
+					break;
+				}
+				else if(esos_uiF14_isRPGTurning() && esos_uiF14_isRPGTurningCCW()) {
+					--pst_menu->u8_choice;
+					for(loop_i = 0;pst_menu->ast_items[pst_menu->u8_choice].hidden && loop_i < pst_menu->u8_numitems;loop_i++){
+						printf("Getting previous non-hidden option...\n");
+						pst_menu->u8_choice = (pst_menu->u8_choice - 1)%pst_menu->u8_numitems;
+					}
+					ESOS_TASK_WAIT_UNTIL(!esos_uiF14_isRPGTurning());
+					break;
+				}
+				
+				ESOS_TASK_YIELD();
+			}
 			ESOS_TASK_YIELD();
+		}
+
+		while(__esos_menu_conf.e_menutype == MULTIBOARDFUNCTIONSELECT){
+			static BOOL b_firstMenu;
+			static BOOL b_lastMenu;
+			static esos_menu_multiboardfunctionselectmenu_t *pst_menu;
+
+			// Draw the menu, then wait for a button
+			pst_menu = __esos_menu_conf.pv_data;
+
+			// Clamp the starting choice to possible values.
+			pst_menu->u8_choice = MIN(pst_menu->u8_choice,
+			                          pst_menu->u8_numitems - 1);
+
+			// Draw the correct menu.
+			esos_lcd44780_clearScreen();
+
+			esos_lcd44780_setCustomChar(0, au8_upArrow);
+			esos_lcd44780_setCustomChar(1, au8_dnArrow);
+			//esos_lcd44780_setCustomChar(2, au8_leftArrow); // for dual entry menu
+			pst_menu->ac_selected_board_num[0] = (pst_menu->u8_selected_board / 10) + '0';
+			pst_menu->ac_selected_board_num[1] = (pst_menu->u8_selected_board % 10) + '0';
+
+			esos_lcd44780_writeString(0, 0, pst_menu->ac_selected_board_num);
+			esos_lcd44780_writeString(0, 2, pst_menu->ast_items[pst_menu->u8_choice].ac_line1);
+			esos_lcd44780_writeString(1, 0, pst_menu->ast_items[pst_menu->u8_choice].ac_line2);
+
+			b_firstMenu = (pst_menu->u8_choice == 0);
+			b_lastMenu = (pst_menu->u8_choice >= pst_menu->u8_numitems - 1);
+
+			// Draw the arrows.
+			if(!b_firstMenu)
+				esos_lcd44780_writeChar(0, 7, '\x00');
+			if(!b_lastMenu)
+				esos_lcd44780_writeChar(1, 7, '\x01');
+
+			// Wait for the user to spin the wheel, or press the button.
+			while(TRUE) {
+				if(esos_uiF14_isSW3Pressed()) {
+					ESOS_TASK_WAIT_UNTIL(!esos_uiF14_isSW3Pressed());
+					// The user has chosen.  Bail out.
+					__esos_menu_conf.e_menutype = NONE;
+					break;
+				}
+				else if(esos_uiF14_isRPGTurning() && esos_uiF14_isRPGTurningCW() && !b_lastMenu) {
+					// Attempt to increase the current value.
+					++pst_menu->u8_choice;
+					ESOS_TASK_WAIT_UNTIL(!esos_uiF14_isRPGTurning());
+					break;
+				}
+				else if(esos_uiF14_isRPGTurning() && esos_uiF14_isRPGTurningCCW() && !b_firstMenu) {
+					--pst_menu->u8_choice;
+					ESOS_TASK_WAIT_UNTIL(!esos_uiF14_isRPGTurning());
+					break;
+				}
+				ESOS_TASK_YIELD();
+			}
 		}
 
 		// Clean up the display after finishing a menu.

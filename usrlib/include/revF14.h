@@ -103,6 +103,12 @@ SPI1STATbits.SPIEN = 1;\
 CONFIG_DAC_CS();\
 DAC_SET_CS_HIGH();\
 }
+// #define CONFIG_DAC() {\
+// 	CONFIG_DAC_SDO(); \
+// 	CONFIG_DAC_SCK(); \
+// 	CONFIG_DAC_CS();  \
+// 	DAC_SET_CS_HIGH();\
+// }
 
 
 
