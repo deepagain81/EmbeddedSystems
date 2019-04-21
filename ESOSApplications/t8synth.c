@@ -335,6 +335,8 @@ ESOS_USER_TASK( fcn_synth ) {
     //static u8_temperture_data[2];
     ESOS_TASK_BEGIN();
     u16_DAC_wave_out_index = 0; // initilize to the first index of the wave
+    static uint16_t u16_sending_can_message_id; // should encompass the destination board Team, member, and the message type
+    static uint8_t buf[8] = {0};
     //setDACA(0x3FF);
     //shutdownDACA();
     //shutdownDACB();
@@ -343,7 +345,8 @@ ESOS_USER_TASK( fcn_synth ) {
     while(TRUE){
         //printf("Beginning of fcn_synth loop...\n");
         // Display main menu until sw3 pressed
-
+        u16_sending_can_message_id = 0; // should encompass the destination board Team, member, and the message type
+        buf[0] = 0; buf[1] = 0; buf[2] = 0; buf[3] = 0; buf[4] = 0; buf[5] = 0; buf[6] = 0; buf[7] = 0;
         // printf("num_items: %d (should be 7)\n",my_board_select_menu.u8_numitems);
         // printf("default line 2: %s\n",my_board_select_menu.default_text_line2);
         // printf("board ast_items[0]: %s\n",my_board_select_menu.ast_items[0].ac_line1);
@@ -368,6 +371,11 @@ ESOS_USER_TASK( fcn_synth ) {
             esos_lcd44780_clearScreen();
             ESOS_TASK_WAIT_ESOS_MENU_LONGMENU(menu_setWvform);
             can_board_status[board_select_long.u8_choice].selected_waveform = menu_setWvform.u8_choice;
+            // send waveform on ECAN
+            u16_sending_can_message_id = calcMsgID(index_conversion_y_arr_to_x_arr(board_select_long.u8_choice)) | CANMSG_TYPE_WAVEFORM; // CANMSG_TYPE_TEMPERATURE1 = LM60
+            buf[0] = can_board_status[board_select_long.u8_choice].selected_waveform;
+            ESOS_ECAN_SEND( u16_sending_can_message_id, buf, 1 );    //CAN_id, msg, msg_len
+            ESOS_TASK_WAIT_ON_SEND_STRING("Sent waveform type message.\n");
             //printf("setWvform.u8_choice: %d\n",menu_setWvform.u8_choice);
 
             // Inside the wvform menu, another another menu
@@ -420,12 +428,23 @@ ESOS_USER_TASK( fcn_synth ) {
             freq.entries[0].value = can_board_status[board_select_long.u8_choice].selected_frequency; // keep up with what board we are addressing
             ESOS_TASK_WAIT_ESOS_MENU_ENTRY(freq);
             can_board_status[board_select_long.u8_choice].selected_frequency = freq.entries[0].value; // update struct with new data on a board
+            // send frequency on ECAN
+            u16_sending_can_message_id = calcMsgID(index_conversion_y_arr_to_x_arr(board_select_long.u8_choice)) | CANMSG_TYPE_FREQUENCY; // CANMSG_TYPE_TEMPERATURE1 = LM60
+            buf[0] = (uint8_t)((can_board_status[board_select_long.u8_choice].selected_frequency) >> 8);
+            buf[1] = (uint8_t)((can_board_status[board_select_long.u8_choice].selected_frequency) & 0x00FF);
+            ESOS_ECAN_SEND( u16_sending_can_message_id, buf, 2 );    //CAN_id, msg, msg_len
+            ESOS_TASK_WAIT_ON_SEND_STRING("Sent frequency type message.\n");
             configTimer2();
             //printf("Back in ESOS!\n");
         } else if (alterable_main_menu_function.u8_choice == 3){
             ampltd.entries[0].value = can_board_status[board_select_long.u8_choice].selected_amplitude; // keep up with what board we are addressing
             ESOS_TASK_WAIT_ESOS_MENU_ENTRY(ampltd);
             can_board_status[board_select_long.u8_choice].selected_amplitude = ampltd.entries[0].value;
+            // send amplitude on ECAN
+            u16_sending_can_message_id = calcMsgID(index_conversion_y_arr_to_x_arr(board_select_long.u8_choice)) | CANMSG_TYPE_AMPLITUDE; // CANMSG_TYPE_TEMPERATURE1 = LM60
+            buf[0] = (uint8_t)(can_board_status[board_select_long.u8_choice].selected_amplitude); // not in 3.5 format, but whatever
+            ESOS_ECAN_SEND( u16_sending_can_message_id, buf, 1 );    //CAN_id, msg, msg_len
+            ESOS_TASK_WAIT_ON_SEND_STRING("Sent amplitude type message.\n");
         // } else if (my_menu.u8_choice == 3){
         //     ESOS_TASK_WAIT_ESOS_MENU_ENTRY(duty); // should only appear when square wave is selected
         //     //configTimer2();
@@ -437,7 +456,14 @@ ESOS_USER_TASK( fcn_synth ) {
             ESOS_TASK_WAIT_ESOS_MENU_DATADISPLAYMENU(read_1631);
         } else if (alterable_main_menu_function.u8_choice == 6){
             //setLEDS();
+            LEDs.entries[0].value=can_board_status[board_select_long.u8_choice].LED_state;
             ESOS_TASK_WAIT_ESOS_MENU_ENTRY(LEDs);
+            can_board_status[board_select_long.u8_choice].LED_state = LEDs.entries[0].value;
+            // send LED value on ECAN
+            u16_sending_can_message_id = calcMsgID(index_conversion_y_arr_to_x_arr(board_select_long.u8_choice)) | CANMSG_TYPE_LEDS; // CANMSG_TYPE_TEMPERATURE1 = LM60
+            buf[0] = can_board_status[board_select_long.u8_choice].LED_state;
+            ESOS_ECAN_SEND( u16_sending_can_message_id, buf, 1 );    //CAN_id, msg, msg_len
+            ESOS_TASK_WAIT_ON_SEND_STRING("Sent LED type message.\n");
         } else if (alterable_main_menu_function.u8_choice == 7){
             // about menu
             about_menu.u8_currentline = 0;
@@ -456,7 +482,7 @@ ESOS_USER_TASK( read_LM60_task ) {
     static uint8_t  u8_received_message_type;
     static uint16_t u16_received_arr_index;
 
-    esos_ecan_canfactory_subscribe( __pstSelf, (MY_ID) | CANMSG_TYPE_TEMPERATURE1, 0x07ff, MASKCONTROL_FIELD_NONZERO );
+    //esos_ecan_canfactory_subscribe( __pstSelf, (MY_ID) | CANMSG_TYPE_TEMPERATURE1, 0x07ff, MASKCONTROL_FIELD_NONZERO );
     while(true){
         static MAILMESSAGE msg;
 
@@ -547,13 +573,13 @@ ESOS_USER_TASK( set_LEDs_task ) {
     ESOS_TASK_BEGIN();
     while(true){
         // LED1 MSB
-        if(LEDs.entries[0].value & 0b0000000000000100){
+        if(can_board_status[0].LED_state & 0b0000000000000100){ // was LEDs.entries[0].value; index zero used for "this board"
             esos_uiF14_turnLED1On();
         } else {
             esos_uiF14_turnLED1Off();
         }
         // LED2
-        if(LEDs.entries[0].value & 0b0000000000000010){ // 16 bits
+        if(can_board_status[0].LED_state & 0b0000000000000010){ // 16 bits
             esos_uiF14_turnLED2On();
         } else {
             esos_uiF14_turnLED2Off();
@@ -562,7 +588,7 @@ ESOS_USER_TASK( set_LEDs_task ) {
         // ESOS_TASK_WAIT_ON_SEND_UINT32_AS_HEX_STRING(LEDs.entries[0].value);
         // ESOS_TASK_WAIT_ON_SEND_STRING("\n");
         // LED3
-        if(LEDs.entries[0].value & 0b0000000000000001){
+        if(can_board_status[0].LED_state & 0b0000000000000001){
             esos_uiF14_turnLED3On();
         } else {
             esos_uiF14_turnLED3Off();
@@ -712,6 +738,92 @@ ESOS_USER_TASK ( monitor_for_beacons ) { // should monitor for all CAN messages
         
         ESOS_TASK_YIELD();
     } // end while loop
+    ESOS_TASK_END();
+}
+
+ESOS_USER_TASK ( receive_waveform_data ) {
+    // static uint8_t buf[8] = {0};
+    // static uint8_t u8_len;
+    static uint16_t u16_canID;
+
+    static uint8_t i; // for loop
+
+    // received msg derived info
+    static uint8_t  u8_received_team_id;
+    static uint8_t  u8_received_member_id;
+    static uint8_t  u8_received_message_type;
+    static uint16_t u16_received_arr_index;
+    static uint8_t  buf[8] = {0};
+    static uint8_t  u8_len;
+    ESOS_TASK_BEGIN();
+    esos_ecan_canfactory_subscribe( __pstSelf, 0x000 | CANMSG_TYPE_WAVEFORM,  0x001f, MASKCONTROL_FIELD_NONZERO );
+    esos_ecan_canfactory_subscribe( __pstSelf, 0x000 | CANMSG_TYPE_FREQUENCY, 0x001f, MASKCONTROL_FIELD_NONZERO );
+    esos_ecan_canfactory_subscribe( __pstSelf, 0x000 | CANMSG_TYPE_AMPLITUDE, 0x001f, MASKCONTROL_FIELD_NONZERO );
+    esos_ecan_canfactory_subscribe( __pstSelf, 0x000 | CANMSG_TYPE_LEDS, 0x001f, MASKCONTROL_FIELD_NONZERO );
+    esos_ecan_canfactory_subscribe( __pstSelf, 0x000 | CANMSG_TYPE_TEMPERATURE1, 0x001f, MASKCONTROL_FIELD_NONZERO );
+    esos_ecan_canfactory_subscribe( __pstSelf, 0x000 | CANMSG_TYPE_TEMPERATURE2, 0x001f, MASKCONTROL_FIELD_NONZERO );
+    while(1) {
+        static MAILMESSAGE msg;
+        if(ESOS_TASK_IVE_GOT_MAIL()){
+            ESOS_TASK_GET_NEXT_MESSAGE( &msg );
+            // get the id and msg itself
+            u16_canID = msg.au16_Contents[0];   // this comes from frame structure
+            // interpret msgid
+            u8_received_team_id      = stripTeamID(u16_canID);
+            u8_received_member_id    = stripMemberID(u16_canID);
+            u8_received_message_type = stripTypeID(u16_canID);
+            u16_received_arr_index   = getArrayIndexFromMsgID(u16_canID); // will be indexed by embedded_lab_CANLab.h list
+
+            // from t7sniff.c
+            u8_len = ESOS_GET_PMSG_DATA_LENGTH((&msg)) - sizeof(uint16_t);  // 
+            memset(buf, 0, sizeof(uint8_t[8]));
+            memcpy(buf, &msg.au8_Contents[sizeof(uint16_t)], u8_len);   // param--> varName, msg itself(start point), len of msg to store
+
+            // ensure received id is within the limits
+            if(!(u16_received_arr_index >= 0 && u16_received_arr_index < NUM_OF_IDS)){
+                ESOS_TASK_WAIT_ON_SEND_STRING("Received waveform signal does not have a valid board ID.\n");
+                continue;
+            }
+            // print the type of message received
+            ESOS_TASK_WAIT_ON_SEND_STRING("Received ");
+                        ESOS_TASK_WAIT_ON_SEND_STRING("(");
+            if(u16_received_arr_index < NUM_OF_IDS){
+                ESOS_TASK_WAIT_ON_SEND_STRING(aCANID_IDs[u16_received_arr_index].psz_name);
+                ESOS_TASK_WAIT_ON_SEND_STRING(" - ");
+                ESOS_TASK_WAIT_ON_SEND_STRING(aCANID_IDs[u16_received_arr_index].psz_netID);
+            } else {
+                ESOS_TASK_WAIT_ON_SEND_STRING("???");
+            }
+            ESOS_TASK_WAIT_ON_SEND_STRING(")");
+            // print msg type
+            ESOS_TASK_WAIT_ON_SEND_STRING(" MSG TYPE: ");
+            if(u8_received_message_type < 10){
+                ESOS_TASK_WAIT_ON_SEND_STRING(CAN_MESSAGE_TYPE_DESCRIPTION[u8_received_message_type]);
+            } else {
+                ESOS_TASK_WAIT_ON_SEND_STRING("???");
+            }
+            ESOS_TASK_WAIT_ON_SEND_STRING("\n");
+            // end print message type
+
+            // update the appropriate boards information
+            if(u8_received_message_type == CANMSG_TYPE_WAVEFORM){
+                can_board_status[index_conversion_x_arr_to_y_arr(u16_received_arr_index)].selected_waveform = buf[0]; // x_to_y
+            } else if(u8_received_message_type == CANMSG_TYPE_FREQUENCY){
+                can_board_status[index_conversion_x_arr_to_y_arr(u16_received_arr_index)].selected_frequency = (((uint16_t)buf[0])<<8) | buf[1]; // x_to_y
+            } else if(u8_received_message_type == CANMSG_TYPE_AMPLITUDE){
+                can_board_status[index_conversion_x_arr_to_y_arr(u16_received_arr_index)].selected_amplitude = buf[0]; // x_to_y
+            } else if(u8_received_message_type == CANMSG_TYPE_LEDS) {
+                can_board_status[index_conversion_x_arr_to_y_arr(u16_received_arr_index)].LED_state = buf[0];
+            } else if(u8_received_message_type == CANMSG_TYPE_TEMPERATURE1) {
+                can_board_status[index_conversion_x_arr_to_y_arr(u16_received_arr_index)].measured_temperature_LM60 = (((uint16_t)buf[1])<<8) | buf[0];
+            } else if(u8_received_message_type == CANMSG_TYPE_TEMPERATURE2) {
+                can_board_status[index_conversion_x_arr_to_y_arr(u16_received_arr_index)].measured_temperature_1631 = (((uint16_t)buf[1])<<8) | buf[0];
+            } else {
+                ESOS_TASK_WAIT_ON_SEND_STRING("Wrong message type received in task - should receive waveform messages.\n");
+            }
+        }
+        ESOS_TASK_YIELD();
+    }
     ESOS_TASK_END();
 }
 
@@ -889,7 +1001,8 @@ void user_init ( void ) {
     esos_RegisterTask( CANFactory ); // from esos_ecan.c
     esos_RegisterTask( transmit_beacon );
     esos_RegisterTask( monitor_for_beacons );
-    esos_RegisterTask(transmit_temps);
+    esos_RegisterTask( receive_waveform_data );
+    esos_RegisterTask( transmit_temps );
     //esos_RegisterTask( test_message_type_sending );
     initilize_can_board_status();
 
