@@ -37,9 +37,10 @@ uint16_t u16_sensor_millivolts;
 uint32_t u32_scaled_DAC_value;
 uint16_t u16_I2C_temp;
 uint8_t  u8_wav_val; // temp storage for the current step of the wave
-uint16_t u16_volt_scale; // temp storage for current setting of wave amplitude
+//uint16_t u16_volt_scale; // temp storage for current setting of wave amplitude
 uint16_t u16_DAC_wave_out_index; // initilized in fcn_synth task
 uint64_t sixty_four_test;
+int16_t  i16_volt_scale; // temp storage for current setting of wave amplitude
 
 // Config pin for output (here is where DAC comes into play)
 // #define WAVEOUT(_LATB2)
@@ -225,8 +226,8 @@ ESOS_USER_TASK( fcn_synth ) {
 	ESOS_TASK_BEGIN();
 	u16_DAC_wave_out_index = 0; // initilize to the first index of the wave
 	//setDACA(0x3FF);
-	shutdownDACA();
-	shutdownDACB();
+	//shutdownDACA();
+	//shutdownDACB();
 	//setDACA( 0x513 ); // proves that DACA works
 	//setDACB( 0x0FF ); // proves that DACB works
 	// startI2C();
@@ -414,7 +415,7 @@ ESOS_USER_TASK( read_1631_task ) {
 				ESOS_TASK_WAIT_ON_WRITE1I2C1(0b10010000, 0x51); // initiate conversion
 				ESOS_TASK_SIGNAL_AVAILABLE_I2C();
 			}
-			printf("I2C read is 0x%X\n",u16_temperture_1631);
+			//printf("I2C read is 0x%X\n",u16_temperture_1631);
 		}
 
 		ESOS_TASK_YIELD();
@@ -457,72 +458,72 @@ uint16_t usToTicks(uint16_t u16_us, uint16_t u16_pre){
 	uint64_t timerTicks;
 	internal_freq = 60000000; // 60 MHz
 	timerTicks = ( FCY * (uint64_t)u16_us) / (uint64_t)u16_pre / (uint64_t)1E6;
-	printf("u16_us: %d \nticks: %d \n",u16_us,(int)timerTicks);
+	//printf("u16_us: %d \nticks: %d \n",u16_us,(int)timerTicks);
 	return (uint16_t)timerTicks;
 }
 
 // shouldn't implement hardware timers! Use ESOS!
 
 void configTimer2(void){
-	//set like thing for understanding could be set to register value 0x0020
-	T2CON = T2_OFF | T2_IDLE_CON | T2_GATE_OFF
-			| T2_32BIT_MODE_OFF
-			| T2_SOURCE_INT
-			| T2_PS_1_64;
+    //set like thing for understanding could be set to register value 0x0020
+    T2CON = T2_OFF | T2_IDLE_CON | T2_GATE_OFF
+            | T2_32BIT_MODE_OFF
+            | T2_SOURCE_INT
+            | T2_PS_1_64;
 
-	//PR2 = 5849;//msToU16Ticks(ISP_PERIOD, getTimerPrescale(T2CONbits))-1; 	// results to 5849;
-	PR2 = usToTicks(((uint32_t)1E6/freq.entries[0].value), 64) - 1; // -1 since timout is actually PR2 - 1; get desired microsec by 1 mega / freq
-	printf("PR2: %d\n", PR2);
-	TMR2 = 0;		// clear T2 value
-	//_T2IF = 0;		// Clear interrupt flag
-	//_T2IP = 3; 		//priority
-	//_T2IE = 1; 		// Enable
-	ESOS_MARK_PIC24_USER_INTERRUPT_SERVICED(ESOS_IRQ_PIC24_T2); // pg 625
-
-	ESOS_REGISTER_PIC24_USER_INTERRUPT( ESOS_IRQ_PIC24_T2, ESOS_USER_IRQ_LEVEL1, _T2Interrupt);
-  	ESOS_ENABLE_PIC24_USER_INTERRUPT(ESOS_IRQ_PIC24_T2);
-	T2CONbits.TON = 1;		// turn on the timer
-	//printf("End of configTimer2(). Returning to ESOS...");
+    //PR2 = 5849;//msToU16Ticks(ISP_PERIOD, getTimerPrescale(T2CONbits))-1;     // results to 5849;
+    PR2 = usToTicks(((uint32_t)1E6/freq.entries[0].value), 64) - 1; // -1 since timout is actually PR2 - 1; get desired microsec by 1 mega / freq
+    //printf("PR2: %d\n", PR2);
+    TMR2 = 0;       // clear T2 value
+    //_T2IF = 0;        // Clear interrupt flag
+    //_T2IP = 3;        //priority
+    //_T2IE = 1;        // Enable
+    ESOS_MARK_PIC24_USER_INTERRUPT_SERVICED(ESOS_IRQ_PIC24_T2); // pg 625
+    T2CONbits.TON = 1;      // turn on the timer
+    //printf("End of configTimer2(). Returning to ESOS...");
 }//end timer config
 
 //Interrupt service ( DAC comes here, i guess)
 //void _ISR_T2Interrupt(void){
 ESOS_USER_INTERRUPT( ESOS_IRQ_PIC24_T2 ) { // ESOS_IRQ_PIC24_T2
-	// get variablesESOS_IRQ_PIC24_T2
-	//esos_uiF14_turnLED1On();
-	//printf("Hi\n");
-	u16_volt_scale = ampltd.entries[0].value;
-	if(menu_setWvform.u8_choice == 0){ //tri, sine, square, usr1
-		u8_wav_val = au8_tritbl[u16_DAC_wave_out_index];
-		//printf("tri - ");
-	} else if(menu_setWvform.u8_choice == 1)  { // sine
-		u8_wav_val = au8_sinetbl[u16_DAC_wave_out_index];
-		//printf("sin - ");
-	} else if(menu_setWvform.u8_choice == 2)  { // square
-		u8_wav_val = au8_sqrtbl[u16_DAC_wave_out_index];
-		//printf("sqr - ");
-	}  else if(menu_setWvform.u8_choice == 3) { // usr1
-		u8_wav_val = au8_usr1tbl[u16_DAC_wave_out_index];
-		//printf("usr1- ");
-	} else {
-		u8_wav_val = 0x7F; // default to DC of half the max if there is a problem
-	}
-	//write to DAC
-		// amplitude scaled value of the array - double length at least
-		// u32_scaled_DAC_value = ((uint32_t)u8_wav_val * (uint32_t)u16_volt_scale * (uint32_t)16 / (uint32_t)33) + 
-		//                        ((uint32_t)u8_wav_val * (uint32_t)u16_volt_scale * (uint32_t)15/(uint32_t)33 / (uint32_t)255); // max of 0xFFF, min of 0x000
-		u32_scaled_DAC_value = (uint32_t)u8_wav_val * (uint32_t)u16_volt_scale;
-		u32_scaled_DAC_value = u32_scaled_DAC_value << 6;
-		u32_scaled_DAC_value = u32_scaled_DAC_value / ((uint32_t)255*33*2*2*2*2*2*2);
-		// send value to DACA
-		//printf("Preparing to setDACA inside interrupt...\n");
-		setDACA((uint16_t)u32_scaled_DAC_value);
-		//printf("wav_val: %d, scaled DAC: 0x%08lX index:%d, \n", u8_wav_val, u32_scaled_DAC_value, u16_DAC_wave_out_index);
-	//increment index of array
-	u16_DAC_wave_out_index = (u16_DAC_wave_out_index + 1)%128; // arrays are 128 elements
-	//WAVEOUT = !WAVEOUT;
-	_T2IF = 0;	// clear interrupt flag
+    // get variablesESOS_IRQ_PIC24_T2
+    //esos_uiF14_turnLED1On();
+    //printf("Hi\n");
+    i16_volt_scale = ampltd.entries[0].value;
+    if(menu_setWvform.u8_choice == 0){ //tri, sine, square, usr1
+        u8_wav_val = au8_tritbl[u16_DAC_wave_out_index];
+        //printf("tri - ");
+    } else if(menu_setWvform.u8_choice == 1)  { // sine
+        u8_wav_val = au8_sinetbl[u16_DAC_wave_out_index];
+        //printf("sin - ");
+    } else if(menu_setWvform.u8_choice == 2)  { // square
+        u8_wav_val = au8_sqrtbl[u16_DAC_wave_out_index];
+        //printf("sqr - ");
+    }  else if(menu_setWvform.u8_choice == 3) { // usr1
+        u8_wav_val = au8_usr1tbl[u16_DAC_wave_out_index];
+        //printf("usr1- ");
+    } else {
+        u8_wav_val = 0x7F; // default to DC of half the max if there is a problem
+    }
+    //write to DAC
+        // amplitude scaled value of the array - double length at least
+        // u32_scaled_DAC_value = ((uint32_t)u8_wav_val * (uint32_t)i16_volt_scale * (uint32_t)16 / (uint32_t)33) + 
+        //                        ((uint32_t)u8_wav_val * (uint32_t)i16_volt_scale * (uint32_t)15/(uint32_t)33 / (uint32_t)255); // max of 0xFFF, min of 0x000
+        u32_scaled_DAC_value = u8_wav_val * i16_volt_scale;
+        u32_scaled_DAC_value = u32_scaled_DAC_value << 6;
+        u32_scaled_DAC_value = u32_scaled_DAC_value / (255*33*2*2*2*2*2*2);
+        // send value to DACA
+        //printf("Preparing to setDACA inside interrupt...\n");
+        ///////printf("wav_val: %d u32_scaled_DAC_value: %lu ",u8_wav_val, u32_scaled_DAC_value); printf("volt_scale: %d (from %d)\n", i16_volt_scale, ampltd.entries[0].value);
+    //setDACA((uint16_t)u32_scaled_DAC_value);
+        //printf("wav_val: %d, scaled DAC: 0x%08lX index:%d, \n", u8_wav_val, u32_scaled_DAC_value, u16_DAC_wave_out_index);
+    //increment index of array
+    u16_DAC_wave_out_index = (u16_DAC_wave_out_index + 1)%128; // arrays are 128 elements
+    //WAVEOUT = !WAVEOUT;
+    _T2IF = 0;  // clear interrupt flag
 }
+// end functions from fcn_synth.c
+
 
 void user_init(){
 	config_esos_uiF14();
@@ -534,4 +535,7 @@ void user_init(){
 
 	esos_pic24_configI2C1(400); // 400kbits/sec is standard speed, 100kbits is slower
 	configTimer2();
+
+	ESOS_REGISTER_PIC24_USER_INTERRUPT( ESOS_IRQ_PIC24_T2, ESOS_USER_IRQ_LEVEL1, _T2Interrupt);
+    ESOS_ENABLE_PIC24_USER_INTERRUPT(ESOS_IRQ_PIC24_T2);
 }
